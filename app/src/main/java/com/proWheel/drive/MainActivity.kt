@@ -7,15 +7,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -30,6 +34,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,11 +62,7 @@ class MainActivity : FragmentActivity() {
                     Surface(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        StudentRegistrationScreen(
-                            onSaveStudent = { student ->
-                                saveStudent(student)
-                            }
-                        )
+                        ProWheelDriveApp()
                     }
                 }
             }
@@ -69,7 +70,7 @@ class MainActivity : FragmentActivity() {
     }
 
     // =========================================================
-    // SAVE STUDENT TO ROOM DATABASE
+    // SAVE STUDENT
     // =========================================================
 
     private fun saveStudent(student: Student) {
@@ -100,6 +101,72 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
+
+    // =========================================================
+    // GET ALL STUDENTS
+    // =========================================================
+
+    private fun getStudents(
+        onResult: (List<Student>) -> Unit
+    ) {
+
+        val database = AppDatabase.getDatabase(this)
+
+        lifecycleScope.launch {
+
+            try {
+
+                val students = database
+                    .studentDao()
+                    .getAllStudents()
+
+                onResult(students)
+
+            } catch (e: Exception) {
+
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error loading students: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    // =========================================================
+    // MAIN APP
+    // =========================================================
+
+    @Composable
+    private fun ProWheelDriveApp() {
+
+        var showStudents by remember {
+            mutableStateOf(false)
+        }
+
+        if (showStudents) {
+
+            RegisteredStudentsScreen(
+                onBack = {
+                    showStudents = false
+                },
+                loadStudents = {
+                    getStudents(it)
+                }
+            )
+
+        } else {
+
+            StudentRegistrationScreen(
+                onSaveStudent = { student ->
+                    saveStudent(student)
+                },
+                onViewStudents = {
+                    showStudents = true
+                }
+            )
+        }
+    }
 }
 
 // =============================================================
@@ -109,12 +176,9 @@ class MainActivity : FragmentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentRegistrationScreen(
-    onSaveStudent: (Student) -> Unit
+    onSaveStudent: (Student) -> Unit,
+    onViewStudents: () -> Unit
 ) {
-
-    // =========================================================
-    // FORM VALUES
-    // =========================================================
 
     var admissionDate by remember { mutableStateOf("") }
     var timing by remember { mutableStateOf("") }
@@ -125,16 +189,8 @@ fun StudentRegistrationScreen(
     var mobile by remember { mutableStateOf("") }
     var totalFees by remember { mutableStateOf("") }
 
-    // =========================================================
-    // DATE & TIME PICKER
-    // =========================================================
-
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-
-    // =========================================================
-    // COURSE DROPDOWN
-    // =========================================================
 
     var courseExpanded by remember { mutableStateOf(false) }
 
@@ -143,10 +199,6 @@ fun StudentRegistrationScreen(
         "2W Training",
         "2W + 4W Training"
     )
-
-    // =========================================================
-    // SERVICES DROPDOWN
-    // =========================================================
 
     var servicesExpanded by remember { mutableStateOf(false) }
 
@@ -158,21 +210,12 @@ fun StudentRegistrationScreen(
         "Other"
     )
 
-    // =========================================================
-    // SCREEN
-    // =========================================================
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp),
-        verticalArrangement = Arrangement.Top
+            .padding(20.dp)
     ) {
-
-        // =====================================================
-        // HEADER
-        // =====================================================
 
         Text(
             text = "PRO WHEEL DRIVE",
@@ -195,9 +238,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // =====================================================
+        // -----------------------------------------------------
         // ADMISSION DATE
-        // =====================================================
+        // -----------------------------------------------------
 
         Box(
             modifier = Modifier
@@ -224,9 +267,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
+        // -----------------------------------------------------
         // TRAINING TIMING
-        // =====================================================
+        // -----------------------------------------------------
 
         Box(
             modifier = Modifier
@@ -253,9 +296,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
-        // STUDENT NAME
-        // =====================================================
+        // -----------------------------------------------------
+        // NAME
+        // -----------------------------------------------------
 
         OutlinedTextField(
             value = name,
@@ -270,9 +313,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
-        // COURSE DROPDOWN
-        // =====================================================
+        // -----------------------------------------------------
+        // COURSE
+        // -----------------------------------------------------
 
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -289,8 +332,12 @@ fun StudentRegistrationScreen(
                 placeholder = {
                     Text("Select Course")
                 },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .matchParentSize()
                     .clickable {
                         courseExpanded = true
                     }
@@ -321,9 +368,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
-        // SERVICES DROPDOWN
-        // =====================================================
+        // -----------------------------------------------------
+        // SERVICES
+        // -----------------------------------------------------
 
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -340,8 +387,12 @@ fun StudentRegistrationScreen(
                 placeholder = {
                     Text("Select Service")
                 },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .matchParentSize()
                     .clickable {
                         servicesExpanded = true
                     }
@@ -372,9 +423,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
+        // -----------------------------------------------------
         // ADDRESS
-        // =====================================================
+        // -----------------------------------------------------
 
         OutlinedTextField(
             value = address,
@@ -391,9 +442,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
-        // MOBILE NUMBER
-        // =====================================================
+        // -----------------------------------------------------
+        // MOBILE
+        // -----------------------------------------------------
 
         OutlinedTextField(
             value = mobile,
@@ -408,9 +459,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
+        // -----------------------------------------------------
         // TOTAL FEES
-        // =====================================================
+        // -----------------------------------------------------
 
         OutlinedTextField(
             value = totalFees,
@@ -428,9 +479,9 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // =====================================================
-        // SAVE STUDENT
-        // =====================================================
+        // -----------------------------------------------------
+        // SAVE
+        // -----------------------------------------------------
 
         Button(
             onClick = {
@@ -455,9 +506,22 @@ fun StudentRegistrationScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // =====================================================
+        // -----------------------------------------------------
+        // VIEW STUDENTS
+        // -----------------------------------------------------
+
+        Button(
+            onClick = onViewStudents,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("VIEW REGISTERED STUDENTS")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // -----------------------------------------------------
         // FINGERPRINT
-        // =====================================================
+        // -----------------------------------------------------
 
         Button(
             onClick = {
@@ -481,7 +545,6 @@ fun StudentRegistrationScreen(
             onDismissRequest = {
                 showDatePicker = false
             },
-
             confirmButton = {
 
                 TextButton(
@@ -505,7 +568,6 @@ fun StudentRegistrationScreen(
                     Text("OK")
                 }
             },
-
             dismissButton = {
 
                 TextButton(
@@ -537,21 +599,17 @@ fun StudentRegistrationScreen(
         )
 
         AlertDialog(
-
             onDismissRequest = {
                 showTimePicker = false
             },
-
             title = {
                 Text("Select Training Time")
             },
-
             text = {
                 TimePicker(
                     state = timePickerState
                 )
             },
-
             confirmButton = {
 
                 TextButton(
@@ -586,7 +644,6 @@ fun StudentRegistrationScreen(
                     Text("OK")
                 }
             },
-
             dismissButton = {
 
                 TextButton(
@@ -598,5 +655,177 @@ fun StudentRegistrationScreen(
                 }
             }
         )
+    }
+}
+
+// =============================================================
+// REGISTERED STUDENTS SCREEN
+// =============================================================
+
+@Composable
+fun RegisteredStudentsScreen(
+    onBack: () -> Unit,
+    loadStudents: ((List<Student>) -> Unit) -> Unit
+) {
+
+    var students by remember {
+        mutableStateOf<List<Student>>(emptyList())
+    }
+
+    var loading by remember {
+        mutableStateOf(true)
+    }
+
+    fun refreshStudents() {
+
+        loading = true
+
+        loadStudents { result ->
+
+            students = result
+            loading = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        refreshStudents()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+    ) {
+
+        // =====================================================
+        // HEADER
+        // =====================================================
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            TextButton(
+                onClick = onBack
+            ) {
+                Text("← Back")
+            }
+
+            Text(
+                text = "Registered Students",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // =====================================================
+        // REFRESH
+        // =====================================================
+
+        Button(
+            onClick = {
+                refreshStudents()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("REFRESH")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // =====================================================
+        // STUDENT LIST
+        // =====================================================
+
+        if (loading) {
+
+            Text(
+                text = "Loading students..."
+            )
+
+        } else if (students.isEmpty()) {
+
+            Text(
+                text = "No students registered yet."
+            )
+
+        } else {
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+
+                items(
+                    items = students,
+                    key = {
+                        it.id
+                    }
+                ) { student ->
+
+                    StudentCard(student)
+
+                    Spacer(
+                        modifier = Modifier.height(10.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// =============================================================
+// STUDENT CARD
+// =============================================================
+
+@Composable
+fun StudentCard(student: Student) {
+
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
+            Text(
+                text = student.name,
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
+
+            Text(
+                text = "Student ID: ${student.id}"
+            )
+
+            Text(
+                text = "Admission Date: ${student.admissionDate}"
+            )
+
+            Text(
+                text = "Training Time: ${student.trainingTime}"
+            )
+
+            Text(
+                text = "Course: ${student.course}"
+            )
+
+            Text(
+                text = "Service: ${student.services}"
+            )
+
+            Text(
+                text = "Mobile: ${student.mobile}"
+            )
+
+            Text(
+                text = "Fees: ${student.totalFees}"
+            )
+        }
     }
 }
