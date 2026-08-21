@@ -1,6 +1,7 @@
 package com.proWheel.drive
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +37,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import com.proWheel.drive.data.AppDatabase
+import com.proWheel.drive.data.Student
 import com.proWheel.drive.ui.theme.FingerPrint3Theme
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,17 +57,60 @@ class MainActivity : FragmentActivity() {
                     Surface(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        StudentRegistrationScreen()
+                        StudentRegistrationScreen(
+                            onSaveStudent = { student ->
+                                saveStudent(student)
+                            }
+                        )
                     }
                 }
             }
         }
     }
+
+    // =========================================================
+    // SAVE STUDENT TO ROOM DATABASE
+    // =========================================================
+
+    private fun saveStudent(student: Student) {
+
+        val database = AppDatabase.getDatabase(this)
+
+        lifecycleScope.launch {
+
+            try {
+
+                val studentId = database
+                    .studentDao()
+                    .insertStudent(student)
+
+                Toast.makeText(
+                    this@MainActivity,
+                    "Student saved successfully. ID: $studentId",
+                    Toast.LENGTH_LONG
+                ).show()
+
+            } catch (e: Exception) {
+
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error saving student: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
 }
+
+// =============================================================
+// STUDENT REGISTRATION SCREEN
+// =============================================================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentRegistrationScreen() {
+fun StudentRegistrationScreen(
+    onSaveStudent: (Student) -> Unit
+) {
 
     // =========================================================
     // FORM VALUES
@@ -386,7 +434,19 @@ fun StudentRegistrationScreen() {
 
         Button(
             onClick = {
-                // We will implement database storage next
+
+                val student = Student(
+                    admissionDate = admissionDate,
+                    trainingTime = timing,
+                    name = name,
+                    course = course,
+                    services = services,
+                    address = address,
+                    mobile = mobile,
+                    totalFees = totalFees
+                )
+
+                onSaveStudent(student)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
