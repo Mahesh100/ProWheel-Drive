@@ -2,7 +2,6 @@ package com.proWheel.drive
 
 import android.content.Context
 import android.os.Bundle
-import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -14,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -35,17 +36,20 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.proWheel.drive.data.AppDatabase
 import com.proWheel.drive.data.AppUser
+import com.proWheel.drive.data.Student
 import com.proWheel.drive.ui.theme.FingerPrint3Theme
 import com.proWheel.drive.utils.passwordUtils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
@@ -55,25 +59,31 @@ import kotlinx.coroutines.withContext
 
 class MainActivity : FragmentActivity() {
 
-    private val preferencesName = "prowheel_preferences"
+    private val preferencesName =
+        "prowheel_preferences"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
         super.onCreate(savedInstanceState)
 
-        val preferences = getSharedPreferences(
-            preferencesName,
-            Context.MODE_PRIVATE
-        )
+        val preferences =
+            getSharedPreferences(
+                preferencesName,
+                Context.MODE_PRIVATE
+            )
 
-        val isLoggedIn = preferences.getBoolean(
-            "is_logged_in",
-            false
-        )
+        val isLoggedIn =
+            preferences.getBoolean(
+                "is_logged_in",
+                false
+            )
 
-        val loggedInUsername = preferences.getString(
-            "username",
-            ""
-        ) ?: ""
+        val loggedInUsername =
+            preferences.getString(
+                "username",
+                ""
+            ) ?: ""
 
         setContent {
 
@@ -128,7 +138,10 @@ class MainActivity : FragmentActivity() {
         keepLoggedIn: Boolean
     ) {
 
-        if (username.isBlank() || password.isBlank()) {
+        if (
+            username.isBlank() ||
+            password.isBlank()
+        ) {
 
             Toast.makeText(
                 this,
@@ -190,7 +203,8 @@ class MainActivity : FragmentActivity() {
                             MaterialTheme {
 
                                 MainApplicationScreen(
-                                    username = user.username,
+                                    username =
+                                        user.username,
 
                                     onLogout = {
                                         logout()
@@ -344,11 +358,12 @@ class MainActivity : FragmentActivity() {
                         password
                     )
 
-                val user = AppUser(
-                    username = username,
-                    passwordHash = passwordHash,
-                    mobile = mobile
-                )
+                val user =
+                    AppUser(
+                        username = username,
+                        passwordHash = passwordHash,
+                        mobile = mobile
+                    )
 
                 withContext(Dispatchers.IO) {
 
@@ -378,7 +393,7 @@ class MainActivity : FragmentActivity() {
 
 
     // =========================================================
-    // SHOW LOGIN SCREEN
+    // SHOW LOGIN
     // =========================================================
 
     private fun showLoginScreen() {
@@ -446,7 +461,9 @@ class MainActivity : FragmentActivity() {
 
 @Composable
 fun LoginScreen(
-    onLogin: (String, String, Boolean) -> Unit,
+    onLogin:
+        (String, String, Boolean) -> Unit,
+
     onRegister: () -> Unit
 ) {
 
@@ -475,7 +492,9 @@ fun LoginScreen(
             text = "PRO WHEEL DRIVE",
 
             style =
-                MaterialTheme.typography.headlineMedium
+                MaterialTheme
+                    .typography
+                    .headlineMedium
         )
 
         Spacer(
@@ -487,7 +506,9 @@ fun LoginScreen(
             text = "Motor Driving School",
 
             style =
-                MaterialTheme.typography.titleMedium
+                MaterialTheme
+                    .typography
+                    .titleMedium
         )
 
         Spacer(
@@ -499,7 +520,9 @@ fun LoginScreen(
             text = "Login",
 
             style =
-                MaterialTheme.typography.headlineSmall
+                MaterialTheme
+                    .typography
+                    .headlineSmall
         )
 
         Spacer(
@@ -576,6 +599,7 @@ fun LoginScreen(
         )
 
         Button(
+
             onClick = {
 
                 onLogin(
@@ -598,6 +622,7 @@ fun LoginScreen(
         )
 
         TextButton(
+
             onClick = onRegister,
 
             modifier =
@@ -656,7 +681,9 @@ fun RegisterScreen(
             text = "PRO WHEEL DRIVE",
 
             style =
-                MaterialTheme.typography.headlineMedium
+                MaterialTheme
+                    .typography
+                    .headlineMedium
         )
 
         Spacer(
@@ -668,7 +695,9 @@ fun RegisterScreen(
             text = "Create New Account",
 
             style =
-                MaterialTheme.typography.headlineSmall
+                MaterialTheme
+                    .typography
+                    .headlineSmall
         )
 
         Spacer(
@@ -757,6 +786,7 @@ fun RegisterScreen(
         )
 
         Button(
+
             onClick = {
 
                 onRegister(
@@ -780,7 +810,9 @@ fun RegisterScreen(
         )
 
         TextButton(
-            onClick = onBackToLogin,
+
+            onClick =
+                onBackToLogin,
 
             modifier =
                 Modifier.fillMaxWidth()
@@ -805,9 +837,13 @@ fun MainApplicationScreen(
     onLogout: () -> Unit
 ) {
 
+    val context =
+        LocalContext.current
+
     val drawerState =
         rememberDrawerState(
-            initialValue = DrawerValue.Closed
+            initialValue =
+                DrawerValue.Closed
         )
 
     val scope =
@@ -817,6 +853,55 @@ fun MainApplicationScreen(
         mutableStateOf("Dashboard")
     }
 
+    var students by remember {
+        mutableStateOf<List<Student>>(
+            emptyList()
+        )
+    }
+
+    // NEW:
+    // Stores the student selected from the list.
+    var selectedStudent by remember {
+        mutableStateOf<Student?>(null)
+    }
+
+
+    // =========================================================
+    // LOAD STUDENTS
+    // =========================================================
+
+    LaunchedEffect(selectedPage) {
+
+        if (selectedPage == "Students") {
+
+            try {
+
+                val database =
+                    AppDatabase.getDatabase(
+                        context
+                    )
+
+                students =
+                    withContext(
+                        Dispatchers.IO
+                    ) {
+
+                        database
+                            .studentDao()
+                            .getAllStudents()
+                    }
+
+            } catch (e: Exception) {
+
+                Toast.makeText(
+                    context,
+                    "Unable to load students: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
 
     // =========================================================
     // NAVIGATION DRAWER
@@ -824,7 +909,8 @@ fun MainApplicationScreen(
 
     ModalNavigationDrawer(
 
-        drawerState = drawerState,
+        drawerState =
+            drawerState,
 
         drawerContent = {
 
@@ -836,7 +922,8 @@ fun MainApplicationScreen(
                 )
 
                 Text(
-                    text = "PRO WHEEL DRIVE",
+                    text =
+                        "PRO WHEEL DRIVE",
 
                     style =
                         MaterialTheme
@@ -848,7 +935,8 @@ fun MainApplicationScreen(
                 )
 
                 Text(
-                    text = "User: $username",
+                    text =
+                        "User: $username",
 
                     modifier =
                         Modifier.padding(
@@ -862,53 +950,56 @@ fun MainApplicationScreen(
                 )
 
 
-                // DASHBOARD
-
                 DrawerItem(
                     text = "Dashboard",
 
                     selected =
-                        selectedPage == "Dashboard"
+                        selectedPage ==
+                                "Dashboard"
                 ) {
 
                     selectedPage =
                         "Dashboard"
 
+                    selectedStudent = null
+
                     scope.launch {
                         drawerState.close()
                     }
                 }
 
-
-                // STUDENTS
 
                 DrawerItem(
                     text = "Students",
 
                     selected =
-                        selectedPage == "Students"
+                        selectedPage ==
+                                "Students"
                 ) {
 
                     selectedPage =
                         "Students"
 
+                    selectedStudent = null
+
                     scope.launch {
                         drawerState.close()
                     }
                 }
 
-
-                // ATTENDANCE
 
                 DrawerItem(
                     text = "Attendance",
 
                     selected =
-                        selectedPage == "Attendance"
+                        selectedPage ==
+                                "Attendance"
                 ) {
 
                     selectedPage =
                         "Attendance"
+
+                    selectedStudent = null
 
                     scope.launch {
                         drawerState.close()
@@ -916,17 +1007,18 @@ fun MainApplicationScreen(
                 }
 
 
-                // SETTINGS
-
                 DrawerItem(
                     text = "Settings",
 
                     selected =
-                        selectedPage == "Settings"
+                        selectedPage ==
+                                "Settings"
                 ) {
 
                     selectedPage =
                         "Settings"
+
+                    selectedStudent = null
 
                     scope.launch {
                         drawerState.close()
@@ -939,8 +1031,6 @@ fun MainApplicationScreen(
                         Modifier.height(20.dp)
                 )
 
-
-                // LOGOUT
 
                 DrawerItem(
                     text = "Logout",
@@ -998,10 +1088,6 @@ fun MainApplicationScreen(
         ) { paddingValues ->
 
 
-            // =================================================
-            // PAGE NAVIGATION
-            // =================================================
-
             when (selectedPage) {
 
 
@@ -1031,6 +1117,8 @@ fun MainApplicationScreen(
 
                     StudentsScreen(
 
+                        students = students,
+
                         modifier =
                             Modifier.padding(
                                 paddingValues
@@ -1040,6 +1128,68 @@ fun MainApplicationScreen(
 
                             selectedPage =
                                 "Student Registration"
+                        },
+
+                        // NEW:
+                        // Student card click.
+                        onStudentClick = { student ->
+
+                            selectedStudent =
+                                student
+
+                            selectedPage =
+                                "Student Details"
+                        },
+
+                        onDeleteStudent = {
+                                student ->
+
+                            scope.launch {
+
+                                try {
+
+                                    val database =
+                                        AppDatabase
+                                            .getDatabase(
+                                                context
+                                            )
+
+                                    withContext(
+                                        Dispatchers.IO
+                                    ) {
+
+                                        database
+                                            .studentDao()
+                                            .deleteStudent(
+                                                student.id
+                                            )
+                                    }
+
+                                    students =
+                                        withContext(
+                                            Dispatchers.IO
+                                        ) {
+
+                                            database
+                                                .studentDao()
+                                                .getAllStudents()
+                                        }
+
+                                    Toast.makeText(
+                                        context,
+                                        "Student deleted",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                } catch (e: Exception) {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Delete failed: ${e.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                         }
                     )
                 }
@@ -1051,25 +1201,103 @@ fun MainApplicationScreen(
 
                 "Student Registration" -> {
 
-                    val context = LocalContext.current
-
                     StudentRegistrationScreen(
 
                         onBack = {
-                            selectedPage = "Students"
+
+                            selectedPage =
+                                "Students"
                         },
 
                         onStudentSaved = {
+                                student ->
 
-                            selectedPage = "Students"
+                            scope.launch {
 
-                            Toast.makeText(
-                                context,
-                                "Student saved successfully",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                                try {
+
+                                    val database =
+                                        AppDatabase
+                                            .getDatabase(
+                                                context
+                                            )
+
+                                    withContext(
+                                        Dispatchers.IO
+                                    ) {
+
+                                        database
+                                            .studentDao()
+                                            .insertStudent(
+                                                student
+                                            )
+                                    }
+
+                                    students =
+                                        withContext(
+                                            Dispatchers.IO
+                                        ) {
+
+                                            database
+                                                .studentDao()
+                                                .getAllStudents()
+                                        }
+
+                                    Toast.makeText(
+                                        context,
+                                        "Student saved successfully",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+
+                                    selectedPage =
+                                        "Students"
+
+                                } catch (e: Exception) {
+
+                                    Toast.makeText(
+                                        context,
+                                        "Unable to save student: ${e.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                         }
                     )
+                }
+
+
+                // =================================================
+                // STUDENT DETAILS
+                // =================================================
+
+                "Student Details" -> {
+
+                    selectedStudent?.let {
+                            student ->
+
+                        StudentDetailsScreen(
+
+                            student = student,
+
+                            onBack = {
+
+                                selectedStudent =
+                                    null
+
+                                selectedPage =
+                                    "Students"
+                            },
+
+                            onEnrollFingerprint = {
+
+                                Toast.makeText(
+                                    context,
+                                    "Fingerprint enrollment will be implemented next",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
+                    }
                 }
 
 
@@ -1081,7 +1309,8 @@ fun MainApplicationScreen(
 
                     SimplePage(
 
-                        title = "Attendance",
+                        title =
+                            "Attendance",
 
                         message =
                             "Attendance management will be here.",
@@ -1102,7 +1331,8 @@ fun MainApplicationScreen(
 
                     SimplePage(
 
-                        title = "Settings",
+                        title =
+                            "Settings",
 
                         message =
                             "Application settings will be here.",
@@ -1134,7 +1364,9 @@ fun DrawerItem(
         text = text,
 
         style =
-            MaterialTheme.typography.titleMedium,
+            MaterialTheme
+                .typography
+                .titleMedium,
 
         modifier = Modifier
             .fillMaxWidth()
@@ -1166,10 +1398,13 @@ fun DashboardScreen(
     ) {
 
         Text(
-            text = "Welcome, $username",
+            text =
+                "Welcome, $username",
 
             style =
-                MaterialTheme.typography.headlineSmall
+                MaterialTheme
+                    .typography
+                    .headlineSmall
         )
 
         Spacer(
@@ -1177,8 +1412,6 @@ fun DashboardScreen(
                 Modifier.height(24.dp)
         )
 
-
-        // REGISTERED STUDENTS
 
         Card(
             modifier =
@@ -1191,7 +1424,8 @@ fun DashboardScreen(
             ) {
 
                 Text(
-                    text = "Registered Students",
+                    text =
+                        "Registered Students",
 
                     style =
                         MaterialTheme
@@ -1205,12 +1439,13 @@ fun DashboardScreen(
                 )
 
                 Text(
-                    text = "0",
+                    text =
+                        "Open Students to view records.",
 
                     style =
                         MaterialTheme
                             .typography
-                            .headlineLarge
+                            .bodyMedium
                 )
             }
         }
@@ -1222,8 +1457,6 @@ fun DashboardScreen(
         )
 
 
-        // TODAY'S ATTENDANCE
-
         Card(
             modifier =
                 Modifier.fillMaxWidth()
@@ -1235,7 +1468,8 @@ fun DashboardScreen(
             ) {
 
                 Text(
-                    text = "Today's Attendance",
+                    text =
+                        "Today's Attendance",
 
                     style =
                         MaterialTheme
@@ -1249,12 +1483,8 @@ fun DashboardScreen(
                 )
 
                 Text(
-                    text = "0",
-
-                    style =
-                        MaterialTheme
-                            .typography
-                            .headlineLarge
+                    text =
+                        "Attendance management will be added next."
                 )
             }
         }
@@ -1268,8 +1498,17 @@ fun DashboardScreen(
 
 @Composable
 fun StudentsScreen(
+    students: List<Student>,
+
     modifier: Modifier = Modifier,
-    onAddStudent: () -> Unit
+
+    onAddStudent: () -> Unit,
+
+    onStudentClick:
+        (Student) -> Unit,
+
+    onDeleteStudent:
+        (Student) -> Unit
 ) {
 
     Column(
@@ -1279,10 +1518,13 @@ fun StudentsScreen(
     ) {
 
         Text(
-            text = "Registered Students",
+            text =
+                "Registered Students",
 
             style =
-                MaterialTheme.typography.headlineSmall
+                MaterialTheme
+                    .typography
+                    .headlineSmall
         )
 
         Spacer(
@@ -1291,11 +1533,14 @@ fun StudentsScreen(
         )
 
 
-        // ADD STUDENT BUTTON
+        // =====================================================
+        // ADD STUDENT
+        // =====================================================
 
         Button(
 
-            onClick = onAddStudent,
+            onClick =
+                onAddStudent,
 
             modifier =
                 Modifier.fillMaxWidth()
@@ -1310,10 +1555,157 @@ fun StudentsScreen(
         )
 
 
-        Text(
-            text =
-                "Student list will appear here."
-        )
+        // =====================================================
+        // EMPTY STATE
+        // =====================================================
+
+        if (students.isEmpty()) {
+
+            Text(
+                text =
+                    "No students registered yet."
+            )
+
+        } else {
+
+
+            // =================================================
+            // STUDENT LIST
+            // =================================================
+
+            LazyColumn(
+
+                modifier =
+                    Modifier.fillMaxSize(),
+
+                verticalArrangement =
+                    Arrangement.spacedBy(
+                        12.dp
+                    )
+            ) {
+
+                items(
+
+                    items = students,
+
+                    key = {
+                        it.id
+                    }
+
+                ) { student ->
+
+                    StudentCard(
+
+                        student =
+                            student,
+
+                        onClick = {
+
+                            onStudentClick(
+                                student
+                            )
+                        },
+
+                        onDelete = {
+
+                            onDeleteStudent(
+                                student
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+// =============================================================
+// STUDENT CARD
+// =============================================================
+
+@Composable
+fun StudentCard(
+    student: Student,
+
+    onClick: () -> Unit,
+
+    onDelete: () -> Unit
+) {
+
+    Card(
+
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+
+                onClick()
+            }
+    ) {
+
+        Column(
+            modifier =
+                Modifier.padding(16.dp)
+        ) {
+
+            Text(
+                text =
+                    student.name,
+
+                style =
+                    MaterialTheme
+                        .typography
+                        .titleLarge
+            )
+
+            Spacer(
+                modifier =
+                    Modifier.height(8.dp)
+            )
+
+            Text(
+                text =
+                    "Mobile: ${student.mobile}"
+            )
+
+            Text(
+                text =
+                    "Course: ${student.course}"
+            )
+
+            Text(
+                text =
+                    "Service: ${student.services}"
+            )
+
+            Text(
+                text =
+                    "Admission: ${student.admissionDate}"
+            )
+
+            Text(
+                text =
+                    "Training: ${student.trainingTime}"
+            )
+
+            Text(
+                text =
+                    "Fees: ${student.totalFees}"
+            )
+
+            Spacer(
+                modifier =
+                    Modifier.height(8.dp)
+            )
+
+            TextButton(
+                onClick =
+                    onDelete
+            ) {
+
+                Text("DELETE")
+            }
+        }
     }
 }
 
@@ -1325,7 +1717,9 @@ fun StudentsScreen(
 @Composable
 fun SimplePage(
     title: String,
+
     message: String,
+
     modifier: Modifier = Modifier
 ) {
 
@@ -1339,7 +1733,9 @@ fun SimplePage(
             text = title,
 
             style =
-                MaterialTheme.typography.headlineSmall
+                MaterialTheme
+                    .typography
+                    .headlineSmall
         )
 
         Spacer(
