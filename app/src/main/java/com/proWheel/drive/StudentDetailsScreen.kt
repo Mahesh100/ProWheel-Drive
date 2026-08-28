@@ -53,37 +53,31 @@ fun StudentDetailsScreen(
 
 
         // =====================================================
-        // HEADER
+        // STUDENT HEADER
         // =====================================================
 
         Text(
             text = student.name,
-
-            style =
-                MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineSmall
         )
 
         Text(
             text = "Student Details",
-
-            style =
-                MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium
         )
 
         Spacer(
-            modifier = Modifier.height(20.dp)
+            modifier = Modifier.height(24.dp)
         )
 
 
         // =====================================================
-        // PAGE 1 — PERSONAL / ADMISSION
+        // PAGE 1
         // =====================================================
 
         Text(
             text = "Page 1 — Student Information",
-
-            style =
-                MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(
@@ -117,14 +111,12 @@ fun StudentDetailsScreen(
 
 
         // =====================================================
-        // PAGE 2 — TRAINING / FEES
+        // PAGE 2
         // =====================================================
 
         Text(
             text = "Page 2 — Training & Fees",
-
-            style =
-                MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(
@@ -163,9 +155,7 @@ fun StudentDetailsScreen(
 
         Text(
             text = "Fingerprint",
-
-            style =
-                MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(
@@ -173,32 +163,32 @@ fun StudentDetailsScreen(
         )
 
         Card(
-            modifier =
-                Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
 
             Column(
-                modifier =
-                    Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
 
                 Text(
-                    text =
-                        "Fingerprint not enrolled"
+                    text = "Fingerprint Status"
                 )
 
                 Spacer(
-                    modifier =
-                        Modifier.height(12.dp)
+                    modifier = Modifier.height(6.dp)
+                )
+
+                Text(
+                    text = "Not Enrolled"
+                )
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
                 )
 
                 Button(
-
-                    onClick =
-                        onEnrollFingerprint,
-
-                    modifier =
-                        Modifier.fillMaxWidth()
+                    onClick = onEnrollFingerprint,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
 
                     Text(
@@ -208,15 +198,16 @@ fun StudentDetailsScreen(
             }
         }
 
+
         Spacer(
-            modifier = Modifier.height(20.dp)
+            modifier = Modifier.height(24.dp)
         )
     }
 }
 
 
 // =============================================================
-// DETAIL CARD
+// STUDENT DETAIL CARD
 // =============================================================
 
 @Composable
@@ -226,19 +217,17 @@ fun StudentDetailCard(
 ) {
 
     Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(
-                    bottom = 8.dp
-                )
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                bottom = 8.dp
+            )
     ) {
 
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
 
             horizontalArrangement =
                 Arrangement.SpaceBetween
