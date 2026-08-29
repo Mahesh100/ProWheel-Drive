@@ -4,24 +4,13 @@ import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,10 +18,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -44,12 +32,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.proWheel.drive.data.AppDatabase
 import com.proWheel.drive.data.AppUser
 import com.proWheel.drive.data.Student
+import com.proWheel.drive.ui.screens.DashboardScreen
+import com.proWheel.drive.ui.screens.LoginScreen
+import com.proWheel.drive.ui.screens.NavigationItem
+import com.proWheel.drive.ui.screens.RegisterScreen
+import com.proWheel.drive.ui.screens.SimplePage
+import com.proWheel.drive.ui.screens.StudentDetailsScreen
+import com.proWheel.drive.ui.screens.StudentsScreen
 import com.proWheel.drive.ui.theme.FingerPrint3Theme
 import com.proWheel.drive.utils.passwordUtils.PasswordUtils
 import kotlinx.coroutines.Dispatchers
@@ -60,11 +56,13 @@ import kotlinx.coroutines.withContext
 class MainActivity : FragmentActivity() {
 
     private val preferencesName =
-        "prowheel_preferences"
+        "proWheel_preferences"
+
 
     override fun onCreate(
         savedInstanceState: Bundle?
     ) {
+
         super.onCreate(savedInstanceState)
 
         val preferences =
@@ -85,6 +83,7 @@ class MainActivity : FragmentActivity() {
                 ""
             ) ?: ""
 
+
         setContent {
 
             FingerPrint3Theme {
@@ -94,7 +93,9 @@ class MainActivity : FragmentActivity() {
                     if (isLoggedIn) {
 
                         MainApplicationScreen(
-                            username = loggedInUsername,
+
+                            username =
+                                loggedInUsername,
 
                             onLogout = {
                                 logout()
@@ -152,6 +153,7 @@ class MainActivity : FragmentActivity() {
             return
         }
 
+
         lifecycleScope.launch {
 
             try {
@@ -161,13 +163,17 @@ class MainActivity : FragmentActivity() {
                         this@MainActivity
                     )
 
+
                 val passwordHash =
                     PasswordUtils.hashPassword(
                         password
                     )
 
+
                 val user =
-                    withContext(Dispatchers.IO) {
+                    withContext(
+                        Dispatchers.IO
+                    ) {
 
                         database
                             .userDao()
@@ -177,13 +183,14 @@ class MainActivity : FragmentActivity() {
                             )
                     }
 
+
                 if (user != null) {
 
                     val preferences =
                         getSharedPreferences(
-                            preferencesName,
-                            Context.MODE_PRIVATE
+                            preferencesName,MODE_PRIVATE
                         )
+
 
                     preferences.edit()
                         .putBoolean(
@@ -196,6 +203,7 @@ class MainActivity : FragmentActivity() {
                         )
                         .apply()
 
+
                     setContent {
 
                         FingerPrint3Theme {
@@ -203,6 +211,7 @@ class MainActivity : FragmentActivity() {
                             MaterialTheme {
 
                                 MainApplicationScreen(
+
                                     username =
                                         user.username,
 
@@ -213,6 +222,7 @@ class MainActivity : FragmentActivity() {
                             }
                         }
                     }
+
 
                     Toast.makeText(
                         this@MainActivity,
@@ -301,6 +311,7 @@ class MainActivity : FragmentActivity() {
             return
         }
 
+
         if (password.isBlank()) {
 
             Toast.makeText(
@@ -311,6 +322,7 @@ class MainActivity : FragmentActivity() {
 
             return
         }
+
 
         if (password != confirmPassword) {
 
@@ -323,6 +335,7 @@ class MainActivity : FragmentActivity() {
             return
         }
 
+
         lifecycleScope.launch {
 
             try {
@@ -332,8 +345,11 @@ class MainActivity : FragmentActivity() {
                         this@MainActivity
                     )
 
+
                 val existingUser =
-                    withContext(Dispatchers.IO) {
+                    withContext(
+                        Dispatchers.IO
+                    ) {
 
                         database
                             .userDao()
@@ -341,6 +357,7 @@ class MainActivity : FragmentActivity() {
                                 username
                             )
                     }
+
 
                 if (existingUser != null) {
 
@@ -353,30 +370,42 @@ class MainActivity : FragmentActivity() {
                     return@launch
                 }
 
+
                 val passwordHash =
                     PasswordUtils.hashPassword(
                         password
                     )
 
+
                 val user =
                     AppUser(
-                        username = username,
-                        passwordHash = passwordHash,
-                        mobile = mobile
+                        username =
+                            username,
+
+                        passwordHash =
+                            passwordHash,
+
+                        mobile =
+                            mobile
                     )
 
-                withContext(Dispatchers.IO) {
+
+                withContext(
+                    Dispatchers.IO
+                ) {
 
                     database
                         .userDao()
                         .insertUser(user)
                 }
 
+
                 Toast.makeText(
                     this@MainActivity,
                     "Registration successful. Please login.",
                     Toast.LENGTH_LONG
                 ).show()
+
 
                 showLoginScreen()
 
@@ -393,7 +422,7 @@ class MainActivity : FragmentActivity() {
 
 
     // =========================================================
-    // SHOW LOGIN
+    // LOGIN SCREEN
     // =========================================================
 
     private fun showLoginScreen() {
@@ -436,15 +465,17 @@ class MainActivity : FragmentActivity() {
 
         val preferences =
             getSharedPreferences(
-                preferencesName,
-                Context.MODE_PRIVATE
+                preferencesName,MODE_PRIVATE
             )
+
 
         preferences.edit()
             .clear()
             .apply()
 
+
         showLoginScreen()
+
 
         Toast.makeText(
             this,
@@ -459,371 +490,13 @@ class MainActivity : FragmentActivity() {
 // LOGIN SCREEN
 // =============================================================
 
-@Composable
-fun LoginScreen(
-    onLogin:
-        (String, String, Boolean) -> Unit,
-
-    onRegister: () -> Unit
-) {
-
-    var username by remember {
-        mutableStateOf("")
-    }
-
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var keepLoggedIn by remember {
-        mutableStateOf(true)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-
-        verticalArrangement =
-            Arrangement.Center
-    ) {
-
-        Text(
-            text = "PRO WHEEL DRIVE",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineMedium
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(4.dp)
-        )
-
-        Text(
-            text = "Motor Driving School",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .titleMedium
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(32.dp)
-        )
-
-        Text(
-            text = "Login",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineSmall
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(20.dp)
-        )
-
-        OutlinedTextField(
-            value = username,
-
-            onValueChange = {
-                username = it
-            },
-
-            label = {
-                Text("Username")
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-
-            onValueChange = {
-                password = it
-            },
-
-            label = {
-                Text("Password")
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        Row(
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Checkbox(
-                checked = keepLoggedIn,
-
-                onCheckedChange = {
-                    keepLoggedIn = it
-                }
-            )
-
-            Text(
-                text = "Keep me logged in",
-
-                modifier =
-                    Modifier.padding(
-                        top = 12.dp
-                    )
-            )
-        }
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        Button(
-
-            onClick = {
-
-                onLogin(
-                    username,
-                    password,
-                    keepLoggedIn
-                )
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Text("LOGIN")
-        }
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        TextButton(
-
-            onClick = onRegister,
-
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Text(
-                "New user? REGISTER"
-            )
-        }
-    }
-}
 
 
 // =============================================================
 // REGISTER SCREEN
 // =============================================================
 
-@Composable
-fun RegisterScreen(
-    onRegister:
-        (String, String, String, String) -> Unit,
 
-    onBackToLogin: () -> Unit
-) {
-
-    var username by remember {
-        mutableStateOf("")
-    }
-
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var confirmPassword by remember {
-        mutableStateOf("")
-    }
-
-    var mobile by remember {
-        mutableStateOf("")
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(
-                rememberScrollState()
-            )
-            .padding(24.dp),
-
-        verticalArrangement =
-            Arrangement.Center
-    ) {
-
-        Text(
-            text = "PRO WHEEL DRIVE",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineMedium
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(4.dp)
-        )
-
-        Text(
-            text = "Create New Account",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineSmall
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(24.dp)
-        )
-
-        OutlinedTextField(
-            value = username,
-
-            onValueChange = {
-                username = it
-            },
-
-            label = {
-                Text("Username")
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-
-            onValueChange = {
-                password = it
-            },
-
-            label = {
-                Text("Password")
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        OutlinedTextField(
-            value = confirmPassword,
-
-            onValueChange = {
-                confirmPassword = it
-            },
-
-            label = {
-                Text("Confirm Password")
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(12.dp)
-        )
-
-        OutlinedTextField(
-            value = mobile,
-
-            onValueChange = {
-                mobile = it
-            },
-
-            label = {
-                Text("Mobile Number")
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(24.dp)
-        )
-
-        Button(
-
-            onClick = {
-
-                onRegister(
-                    username,
-                    password,
-                    confirmPassword,
-                    mobile
-                )
-            },
-
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Text("REGISTER")
-        }
-
-        Spacer(
-            modifier =
-                Modifier.height(8.dp)
-        )
-
-        TextButton(
-
-            onClick =
-                onBackToLogin,
-
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Text(
-                "Already have an account? LOGIN"
-            )
-        }
-    }
-}
 
 
 // =============================================================
@@ -833,12 +506,16 @@ fun RegisterScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainApplicationScreen(
+
     username: String,
-    onLogout: () -> Unit
+
+    onLogout:
+        () -> Unit
 ) {
 
     val context =
         LocalContext.current
+
 
     val drawerState =
         rememberDrawerState(
@@ -846,23 +523,32 @@ fun MainApplicationScreen(
                 DrawerValue.Closed
         )
 
+
     val scope =
         rememberCoroutineScope()
 
-    var selectedPage by remember {
-        mutableStateOf("Dashboard")
-    }
 
-    var students by remember {
-        mutableStateOf<List<Student>>(
-            emptyList()
+    var selectedPage by remember {
+
+        mutableStateOf(
+            "Dashboard"
         )
     }
 
-    // NEW:
-    // Stores the student selected from the list.
+
     var selectedStudent by remember {
-        mutableStateOf<Student?>(null)
+
+        mutableStateOf<com.proWheel.drive.data.Student?>(
+            null
+        )
+    }
+
+
+    var students by remember {
+
+        mutableStateOf<List<com.proWheel.drive.data.Student>>(
+            emptyList()
+        )
     }
 
 
@@ -870,9 +556,14 @@ fun MainApplicationScreen(
     // LOAD STUDENTS
     // =========================================================
 
-    LaunchedEffect(selectedPage) {
+    LaunchedEffect(
+        selectedPage
+    ) {
 
-        if (selectedPage == "Students") {
+        if (
+            selectedPage == "Students" ||
+            selectedPage == "Dashboard"
+        ) {
 
             try {
 
@@ -880,6 +571,7 @@ fun MainApplicationScreen(
                     AppDatabase.getDatabase(
                         context
                     )
+
 
                 students =
                     withContext(
@@ -895,8 +587,8 @@ fun MainApplicationScreen(
 
                 Toast.makeText(
                     context,
-                    "Unable to load students: ${e.message}",
-                    Toast.LENGTH_LONG
+                    "Unable to load students",
+                    Toast.LENGTH_SHORT
                 ).show()
             }
         }
@@ -904,7 +596,7 @@ fun MainApplicationScreen(
 
 
     // =========================================================
-    // NAVIGATION DRAWER
+    // DRAWER
     // =========================================================
 
     ModalNavigationDrawer(
@@ -918,31 +610,95 @@ fun MainApplicationScreen(
 
                 Spacer(
                     modifier =
-                        Modifier.height(24.dp)
+                        Modifier.height(30.dp)
                 )
 
-                Text(
-                    text =
-                        "PRO WHEEL DRIVE",
 
-                    style =
-                        MaterialTheme
-                            .typography
-                            .headlineSmall,
-
-                    modifier =
-                        Modifier.padding(20.dp)
-                )
-
-                Text(
-                    text =
-                        "User: $username",
+                Column(
 
                     modifier =
                         Modifier.padding(
                             horizontal = 20.dp
                         )
-                )
+                ) {
+
+                    Text(
+                        text =
+                            "PRO WHEELS",
+
+                        style =
+                            MaterialTheme
+                                .typography
+                                .headlineSmall,
+
+                        fontWeight =
+                            FontWeight.Bold
+                    )
+
+
+                    Text(
+                        text =
+                            "Motor Driving School",
+
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodyMedium
+                    )
+
+
+                    Spacer(
+                        modifier =
+                            Modifier.height(20.dp)
+                    )
+
+
+                    Surface(
+
+                        modifier =
+                            Modifier.fillMaxWidth(),
+
+                        shape =
+                            MaterialTheme
+                                .shapes
+                                .medium,
+
+                        color =
+                            MaterialTheme
+                                .colorScheme
+                                .surfaceVariant
+                    ) {
+
+                        Column(
+
+                            modifier =
+                                Modifier.padding(
+                                    14.dp
+                                )
+                        ) {
+
+                            Text(
+                                text =
+                                    "Logged in as",
+
+                                style =
+                                    MaterialTheme
+                                        .typography
+                                        .labelMedium
+                            )
+
+
+                            Text(
+                                text =
+                                    username,
+
+                                fontWeight =
+                                    FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
 
                 Spacer(
                     modifier =
@@ -950,8 +706,10 @@ fun MainApplicationScreen(
                 )
 
 
-                DrawerItem(
-                    text = "Dashboard",
+                NavigationItem(
+
+                    text =
+                        "Dashboard",
 
                     selected =
                         selectedPage ==
@@ -961,7 +719,8 @@ fun MainApplicationScreen(
                     selectedPage =
                         "Dashboard"
 
-                    selectedStudent = null
+                    selectedStudent =
+                        null
 
                     scope.launch {
                         drawerState.close()
@@ -969,8 +728,10 @@ fun MainApplicationScreen(
                 }
 
 
-                DrawerItem(
-                    text = "Students",
+                NavigationItem(
+
+                    text =
+                        "Students",
 
                     selected =
                         selectedPage ==
@@ -980,7 +741,8 @@ fun MainApplicationScreen(
                     selectedPage =
                         "Students"
 
-                    selectedStudent = null
+                    selectedStudent =
+                        null
 
                     scope.launch {
                         drawerState.close()
@@ -988,8 +750,10 @@ fun MainApplicationScreen(
                 }
 
 
-                DrawerItem(
-                    text = "Attendance",
+                NavigationItem(
+
+                    text =
+                        "Attendance",
 
                     selected =
                         selectedPage ==
@@ -999,7 +763,8 @@ fun MainApplicationScreen(
                     selectedPage =
                         "Attendance"
 
-                    selectedStudent = null
+                    selectedStudent =
+                        null
 
                     scope.launch {
                         drawerState.close()
@@ -1007,8 +772,10 @@ fun MainApplicationScreen(
                 }
 
 
-                DrawerItem(
-                    text = "Settings",
+                NavigationItem(
+
+                    text =
+                        "Settings",
 
                     selected =
                         selectedPage ==
@@ -1018,7 +785,8 @@ fun MainApplicationScreen(
                     selectedPage =
                         "Settings"
 
-                    selectedStudent = null
+                    selectedStudent =
+                        null
 
                     scope.launch {
                         drawerState.close()
@@ -1032,10 +800,13 @@ fun MainApplicationScreen(
                 )
 
 
-                DrawerItem(
-                    text = "Logout",
+                NavigationItem(
 
-                    selected = false
+                    text =
+                        "Logout",
+
+                    selected =
+                        false
                 ) {
 
                     scope.launch {
@@ -1048,6 +819,7 @@ fun MainApplicationScreen(
         }
     ) {
 
+
         Scaffold(
 
             topBar = {
@@ -1057,9 +829,28 @@ fun MainApplicationScreen(
                     title = {
 
                         Text(
-                            selectedPage
+
+                            when {
+
+                                selectedPage ==
+                                        "Student Registration" ->
+
+                                    "Add Student"
+
+
+                                selectedPage ==
+                                        "Student Details" ->
+
+                                    "Student Details"
+
+
+                                else ->
+
+                                    selectedPage
+                            }
                         )
                     },
+
 
                     navigationIcon = {
 
@@ -1074,11 +865,12 @@ fun MainApplicationScreen(
                         ) {
 
                             Icon(
+
                                 imageVector =
                                     Icons.Default.Menu,
 
                                 contentDescription =
-                                    "Menu"
+                                    "Open menu"
                             )
                         }
                     }
@@ -1099,12 +891,22 @@ fun MainApplicationScreen(
 
                     DashboardScreen(
 
-                        username = username,
+                        username =
+                            username,
+
+                        studentCount =
+                            students.size,
 
                         modifier =
                             Modifier.padding(
                                 paddingValues
-                            )
+                            ),
+
+                        onOpenStudents = {
+
+                            selectedPage =
+                                "Students"
+                        }
                     )
                 }
 
@@ -1117,7 +919,8 @@ fun MainApplicationScreen(
 
                     StudentsScreen(
 
-                        students = students,
+                        students =
+                            students,
 
                         modifier =
                             Modifier.padding(
@@ -1130,9 +933,7 @@ fun MainApplicationScreen(
                                 "Student Registration"
                         },
 
-                        // NEW:
-                        // Student card click.
-                        onStudentClick = { student ->
+                        onStudentClick = { student: Student ->
 
                             selectedStudent =
                                 student
@@ -1141,8 +942,8 @@ fun MainApplicationScreen(
                                 "Student Details"
                         },
 
-                        onDeleteStudent = {
-                                student ->
+
+                        onDeleteStudent = { student: Student ->
 
                             scope.launch {
 
@@ -1154,16 +955,21 @@ fun MainApplicationScreen(
                                                 context
                                             )
 
+
                                     withContext(
                                         Dispatchers.IO
                                     ) {
 
+                                        // FIX:
+                                        // DAO expects Student,
+                                        // not Int.
                                         database
                                             .studentDao()
                                             .deleteStudent(
                                                 student.id
                                             )
                                     }
+
 
                                     students =
                                         withContext(
@@ -1175,13 +981,16 @@ fun MainApplicationScreen(
                                                 .getAllStudents()
                                         }
 
+
                                     Toast.makeText(
                                         context,
                                         "Student deleted",
                                         Toast.LENGTH_SHORT
                                     ).show()
 
-                                } catch (e: Exception) {
+                                } catch (
+                                    e: Exception
+                                ) {
 
                                     Toast.makeText(
                                         context,
@@ -1196,7 +1005,7 @@ fun MainApplicationScreen(
 
 
                 // =================================================
-                // STUDENT REGISTRATION
+                // REGISTRATION
                 // =================================================
 
                 "Student Registration" -> {
@@ -1208,6 +1017,7 @@ fun MainApplicationScreen(
                             selectedPage =
                                 "Students"
                         },
+
 
                         onStudentSaved = {
                                 student ->
@@ -1222,6 +1032,7 @@ fun MainApplicationScreen(
                                                 context
                                             )
 
+
                                     withContext(
                                         Dispatchers.IO
                                     ) {
@@ -1233,6 +1044,7 @@ fun MainApplicationScreen(
                                             )
                                     }
 
+
                                     students =
                                         withContext(
                                             Dispatchers.IO
@@ -1243,16 +1055,20 @@ fun MainApplicationScreen(
                                                 .getAllStudents()
                                         }
 
+
                                     Toast.makeText(
                                         context,
                                         "Student saved successfully",
                                         Toast.LENGTH_SHORT
                                     ).show()
 
+
                                     selectedPage =
                                         "Students"
 
-                                } catch (e: Exception) {
+                                } catch (
+                                    e: Exception
+                                ) {
 
                                     Toast.makeText(
                                         context,
@@ -1277,7 +1093,8 @@ fun MainApplicationScreen(
 
                         StudentDetailsScreen(
 
-                            student = student,
+                            student =
+                                student,
 
                             onBack = {
 
@@ -1287,6 +1104,7 @@ fun MainApplicationScreen(
                                 selectedPage =
                                     "Students"
                             },
+
 
                             onEnrollFingerprint = {
 
@@ -1313,7 +1131,7 @@ fun MainApplicationScreen(
                             "Attendance",
 
                         message =
-                            "Attendance management will be here.",
+                            "Attendance management will be added here.",
 
                         modifier =
                             Modifier.padding(
@@ -1335,7 +1153,7 @@ fun MainApplicationScreen(
                             "Settings",
 
                         message =
-                            "Application settings will be here.",
+                            "Application settings will be added here.",
 
                         modifier =
                             Modifier.padding(
@@ -1350,401 +1168,40 @@ fun MainApplicationScreen(
 
 
 // =============================================================
-// DRAWER ITEM
+// NAVIGATION ITEM
 // =============================================================
 
-@Composable
-fun DrawerItem(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
 
-    Text(
-        text = text,
-
-        style =
-            MaterialTheme
-                .typography
-                .titleMedium,
-
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onClick()
-            }
-            .padding(
-                horizontal = 24.dp,
-                vertical = 14.dp
-            )
-    )
-}
 
 
 // =============================================================
-// DASHBOARD SCREEN
+// DASHBOARD
 // =============================================================
 
-@Composable
-fun DashboardScreen(
-    username: String,
-    modifier: Modifier = Modifier
-) {
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp)
-    ) {
-
-        Text(
-            text =
-                "Welcome, $username",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineSmall
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(24.dp)
-        )
-
-
-        Card(
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Column(
-                modifier =
-                    Modifier.padding(20.dp)
-            ) {
-
-                Text(
-                    text =
-                        "Registered Students",
-
-                    style =
-                        MaterialTheme
-                            .typography
-                            .titleMedium
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(8.dp)
-                )
-
-                Text(
-                    text =
-                        "Open Students to view records.",
-
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium
-                )
-            }
-        }
-
-
-        Spacer(
-            modifier =
-                Modifier.height(16.dp)
-        )
-
-
-        Card(
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Column(
-                modifier =
-                    Modifier.padding(20.dp)
-            ) {
-
-                Text(
-                    text =
-                        "Today's Attendance",
-
-                    style =
-                        MaterialTheme
-                            .typography
-                            .titleMedium
-                )
-
-                Spacer(
-                    modifier =
-                        Modifier.height(8.dp)
-                )
-
-                Text(
-                    text =
-                        "Attendance management will be added next."
-                )
-            }
-        }
-    }
-}
 
 
 // =============================================================
 // STUDENTS SCREEN
 // =============================================================
 
-@Composable
-fun StudentsScreen(
-    students: List<Student>,
 
-    modifier: Modifier = Modifier,
-
-    onAddStudent: () -> Unit,
-
-    onStudentClick:
-        (Student) -> Unit,
-
-    onDeleteStudent:
-        (Student) -> Unit
-) {
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp)
-    ) {
-
-        Text(
-            text =
-                "Registered Students",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineSmall
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(20.dp)
-        )
-
-
-        // =====================================================
-        // ADD STUDENT
-        // =====================================================
-
-        Button(
-
-            onClick =
-                onAddStudent,
-
-            modifier =
-                Modifier.fillMaxWidth()
-        ) {
-
-            Text("+ ADD STUDENT")
-        }
-
-        Spacer(
-            modifier =
-                Modifier.height(20.dp)
-        )
-
-
-        // =====================================================
-        // EMPTY STATE
-        // =====================================================
-
-        if (students.isEmpty()) {
-
-            Text(
-                text =
-                    "No students registered yet."
-            )
-
-        } else {
-
-
-            // =================================================
-            // STUDENT LIST
-            // =================================================
-
-            LazyColumn(
-
-                modifier =
-                    Modifier.fillMaxSize(),
-
-                verticalArrangement =
-                    Arrangement.spacedBy(
-                        12.dp
-                    )
-            ) {
-
-                items(
-
-                    items = students,
-
-                    key = {
-                        it.id
-                    }
-
-                ) { student ->
-
-                    StudentCard(
-
-                        student =
-                            student,
-
-                        onClick = {
-
-                            onStudentClick(
-                                student
-                            )
-                        },
-
-                        onDelete = {
-
-                            onDeleteStudent(
-                                student
-                            )
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
 
 
 // =============================================================
 // STUDENT CARD
 // =============================================================
 
-@Composable
-fun StudentCard(
-    student: Student,
 
-    onClick: () -> Unit,
 
-    onDelete: () -> Unit
-) {
 
-    Card(
+// =============================================================
+// STUDENT INFO ROW
+// =============================================================
 
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
 
-                onClick()
-            }
-    ) {
-
-        Column(
-            modifier =
-                Modifier.padding(16.dp)
-        ) {
-
-            Text(
-                text =
-                    student.name,
-
-                style =
-                    MaterialTheme
-                        .typography
-                        .titleLarge
-            )
-
-            Spacer(
-                modifier =
-                    Modifier.height(8.dp)
-            )
-
-            Text(
-                text =
-                    "Mobile: ${student.mobile}"
-            )
-
-            Text(
-                text =
-                    "Course: ${student.course}"
-            )
-
-            Text(
-                text =
-                    "Service: ${student.services}"
-            )
-
-            Text(
-                text =
-                    "Admission: ${student.admissionDate}"
-            )
-
-            Text(
-                text =
-                    "Training: ${student.trainingTime}"
-            )
-
-            Text(
-                text =
-                    "Fees: ${student.totalFees}"
-            )
-
-            Spacer(
-                modifier =
-                    Modifier.height(8.dp)
-            )
-
-            TextButton(
-                onClick =
-                    onDelete
-            ) {
-
-                Text("DELETE")
-            }
-        }
-    }
-}
 
 
 // =============================================================
 // SIMPLE PAGE
 // =============================================================
-
-@Composable
-fun SimplePage(
-    title: String,
-
-    message: String,
-
-    modifier: Modifier = Modifier
-) {
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp)
-    ) {
-
-        Text(
-            text = title,
-
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineSmall
-        )
-
-        Spacer(
-            modifier =
-                Modifier.height(16.dp)
-        )
-
-        Text(
-            text = message
-        )
-    }
-}
