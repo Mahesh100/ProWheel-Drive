@@ -2,7 +2,6 @@ package com.proWheel.drive.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,21 +9,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,18 +44,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+
 
 @Composable
 fun LoginScreen(
     onLogin: (String, String, Boolean) -> Unit,
     onRegister: () -> Unit
 ) {
+
+    // =========================================================
+    // FORM STATE
+    // =========================================================
 
     var username by remember {
         mutableStateOf("")
@@ -68,6 +83,11 @@ fun LoginScreen(
         mutableStateOf(false)
     }
 
+
+    // =========================================================
+    // VALIDATION STATE
+    // =========================================================
+
     var usernameError by remember {
         mutableStateOf(false)
     }
@@ -76,530 +96,210 @@ fun LoginScreen(
         mutableStateOf(false)
     }
 
-    var isLoading by remember {
-        mutableStateOf(false)
-    }
 
+    // =========================================================
+    // KEYBOARD / FOCUS
+    // =========================================================
 
-    fun performLogin() {
-
-        usernameError =
-            username.isBlank()
-
-        passwordError =
-            password.isBlank()
-
-        if (
-            usernameError ||
-            passwordError
-        ) {
-            return
+    val passwordFocusRequester =
+        remember {
+            FocusRequester()
         }
 
-        isLoading = true
-
-        onLogin(
-            username.trim(),
-            password,
-            keepLoggedIn
-        )
-
-        /*
-         * MainActivity owns the actual authentication flow.
-         * This keeps the existing Room/database logic unchanged.
-         */
-        isLoading = false
-    }
+    val keyboardController =
+        LocalSoftwareKeyboardController.current
 
 
-    Column(
+    // =========================================================
+    // SCREEN
+    // =========================================================
 
+    Surface(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .imePadding()
-                .navigationBarsPadding()
-                .verticalScroll(
-                    rememberScrollState()
-                )
-                .padding(
-                    horizontal = 24.dp,
-                    vertical = 20.dp
-                ),
+            Modifier.fillMaxSize(),
 
-        horizontalAlignment =
-            Alignment.CenterHorizontally
+        color =
+            MaterialTheme
+                .colorScheme
+                .background
     ) {
 
-        Spacer(
-            modifier =
-                Modifier.height(28.dp)
-        )
-
-
-        // =====================================================
-        // BRAND
-        // =====================================================
-
-        Surface(
+        Column(
 
             modifier =
-                Modifier.size(72.dp),
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(
+                        rememberScrollState()
+                    )
+                    .imePadding()
+                    .padding(
+                        horizontal = 24.dp,
+                        vertical = 24.dp
+                    ),
 
-            shape =
-                MaterialTheme
-                    .shapes
-                    .large,
-
-            color =
-                MaterialTheme
-                    .colorScheme
-                    .primaryContainer
+            horizontalAlignment =
+                Alignment.CenterHorizontally
         ) {
 
-            Box(
-                contentAlignment =
-                    Alignment.Center
+            Spacer(
+                modifier =
+                    Modifier.weight(
+                        1f,
+                        fill = false
+                    )
+            )
+
+
+            // =================================================
+            // APP ICON
+            // =================================================
+
+            Surface(
+
+                modifier =
+                    Modifier.size(72.dp),
+
+                shape =
+                    CircleShape,
+
+                color =
+                    MaterialTheme
+                        .colorScheme
+                        .primaryContainer
             ) {
 
-                Text(
-                    text = "PW",
+                Icon(
+                    imageVector =
+                        Icons.Default.School,
 
-                    style =
-                        MaterialTheme
-                            .typography
-                            .headlineSmall,
+                    contentDescription =
+                        null,
 
-                    fontWeight =
-                        FontWeight.Bold,
+                    modifier =
+                        Modifier.padding(20.dp),
 
-                    color =
+                    tint =
                         MaterialTheme
                             .colorScheme
                             .onPrimaryContainer
                 )
             }
-        }
 
 
-        Spacer(
-            modifier =
-                Modifier.height(18.dp)
-        )
+            Spacer(
+                modifier =
+                    Modifier.height(18.dp)
+            )
 
 
-        Text(
+            // =================================================
+            // BRAND
+            // =================================================
 
-            text =
-                "PRO WHEEL DRIVE",
+            Text(
+                text =
+                    "PRO WHEEL DRIVE",
 
-            style =
-                MaterialTheme
-                    .typography
-                    .headlineSmall,
+                style =
+                    MaterialTheme
+                        .typography
+                        .headlineSmall,
 
-            fontWeight =
-                FontWeight.Bold
-        )
+                fontWeight =
+                    FontWeight.Bold,
 
-
-        Spacer(
-            modifier =
-                Modifier.height(4.dp)
-        )
-
-
-        Text(
-
-            text =
-                "Driving School Management",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .bodyMedium,
-
-            color =
-                MaterialTheme
-                    .colorScheme
-                    .onSurfaceVariant
-        )
+                textAlign =
+                    TextAlign.Center
+            )
 
 
-        Spacer(
-            modifier =
-                Modifier.height(32.dp)
-        )
+            Spacer(
+                modifier =
+                    Modifier.height(4.dp)
+            )
 
 
-        // =====================================================
-        // LOGIN CARD
-        // =====================================================
+            Text(
+                text =
+                    "Motor Driving School",
 
-        Card(
+                style =
+                    MaterialTheme
+                        .typography
+                        .bodyLarge,
 
-            modifier =
-                Modifier.fillMaxWidth(),
+                color =
+                    MaterialTheme
+                        .colorScheme
+                        .onSurfaceVariant,
 
-            elevation =
-                CardDefaults
-                    .cardElevation(
-                        defaultElevation =
-                            2.dp
-                    )
-        ) {
+                textAlign =
+                    TextAlign.Center
+            )
 
-            Column(
+
+            Spacer(
+                modifier =
+                    Modifier.height(28.dp)
+            )
+
+
+            // =================================================
+            // LOGIN CARD
+            // =================================================
+
+            Card(
 
                 modifier =
-                    Modifier.padding(
-                        22.dp
+                    Modifier.fillMaxWidth(),
+
+                shape =
+                    RoundedCornerShape(24.dp),
+
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            MaterialTheme
+                                .colorScheme
+                                .surfaceContainer
+                    ),
+
+                elevation =
+                    CardDefaults.cardElevation(
+                        defaultElevation = 0.dp
                     )
             ) {
 
-                Text(
-
-                    text =
-                        "Welcome back",
-
-                    style =
-                        MaterialTheme
-                            .typography
-                            .headlineSmall,
-
-                    fontWeight =
-                        FontWeight.Bold
-                )
-
-
-                Spacer(
-                    modifier =
-                        Modifier.height(6.dp)
-                )
-
-
-                Text(
-
-                    text =
-                        "Sign in to continue",
-
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium,
-
-                    color =
-                        MaterialTheme
-                            .colorScheme
-                            .onSurfaceVariant
-                )
-
-
-                Spacer(
-                    modifier =
-                        Modifier.height(24.dp)
-                )
-
-
-                // =================================================
-                // USERNAME
-                // =================================================
-
-                OutlinedTextField(
-
-                    value =
-                        username,
-
-                    onValueChange = {
-
-                        username = it
-
-                        if (it.isNotBlank()) {
-                            usernameError = false
-                        }
-                    },
+                Column(
 
                     modifier =
-                        Modifier.fillMaxWidth(),
-
-                    label = {
-                        Text("Username")
-                    },
-
-                    singleLine = true,
-
-                    isError =
-                        usernameError,
-
-                    supportingText = {
-
-                        if (usernameError) {
-
-                            Text(
-                                "Username is required"
-                            )
-                        }
-                    },
-
-                    keyboardOptions =
-                        KeyboardOptions(
-                            keyboardType =
-                                KeyboardType.Text,
-
-                            imeAction =
-                                ImeAction.Next
-                        ),
-
-                    enabled =
-                        !isLoading
-                )
-
-
-                Spacer(
-                    modifier =
-                        Modifier.height(14.dp)
-                )
-
-
-                // =================================================
-                // PASSWORD
-                // =================================================
-
-                OutlinedTextField(
-
-                    value =
-                        password,
-
-                    onValueChange = {
-
-                        password = it
-
-                        if (it.isNotBlank()) {
-                            passwordError = false
-                        }
-                    },
-
-                    modifier =
-                        Modifier.fillMaxWidth(),
-
-                    label = {
-                        Text("Password")
-                    },
-
-                    singleLine = true,
-
-                    isError =
-                        passwordError,
-
-                    supportingText = {
-
-                        if (passwordError) {
-
-                            Text(
-                                "Password is required"
-                            )
-                        }
-                    },
-
-                    visualTransformation =
-
-                        if (passwordVisible)
-
-                            VisualTransformation.None
-
-                        else
-
-                            PasswordVisualTransformation(),
-
-                    trailingIcon = {
-
-                        IconButton(
-
-                            onClick = {
-
-                                passwordVisible =
-                                    !passwordVisible
-                            },
-
-                            enabled =
-                                !isLoading
-                        ) {
-
-                            Icon(
-
-                                imageVector =
-
-                                    if (passwordVisible)
-
-                                        Icons.Default.VisibilityOff
-
-                                    else
-
-                                        Icons.Default.Visibility,
-
-                                contentDescription =
-
-                                    if (passwordVisible)
-
-                                        "Hide password"
-
-                                    else
-
-                                        "Show password"
-                            )
-                        }
-                    },
-
-                    keyboardOptions =
-                        KeyboardOptions(
-                            keyboardType =
-                                KeyboardType.Password,
-
-                            imeAction =
-                                ImeAction.Done
-                        ),
-
-                    enabled =
-                        !isLoading
-                )
-
-
-                Spacer(
-                    modifier =
-                        Modifier.height(4.dp)
-                )
-
-
-                // =================================================
-                // KEEP LOGGED IN
-                // =================================================
-
-                Row(
-
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                enabled =
-                                    !isLoading
-                            ) {
-
-                                keepLoggedIn =
-                                    !keepLoggedIn
-                            },
-
-                    verticalAlignment =
-                        Alignment.CenterVertically
+                        Modifier.padding(20.dp)
                 ) {
 
-                    Checkbox(
-
-                        checked =
-                            keepLoggedIn,
-
-                        onCheckedChange = {
-
-                            keepLoggedIn =
-                                it
-                        },
-
-                        enabled =
-                            !isLoading
-                    )
-
-
                     Text(
-
                         text =
-                            "Keep me signed in",
+                            "Welcome back",
 
                         style =
                             MaterialTheme
                                 .typography
-                                .bodyMedium
+                                .headlineSmall,
+
+                        fontWeight =
+                            FontWeight.Bold
                     )
-                }
 
 
-                Spacer(
-                    modifier =
-                        Modifier.height(18.dp)
-                )
+                    Spacer(
+                        modifier =
+                            Modifier.height(4.dp)
+                    )
 
-
-                // =================================================
-                // LOGIN BUTTON
-                // =================================================
-
-                Button(
-
-                    onClick =
-                        ::performLogin,
-
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-
-                    enabled =
-                        !isLoading
-                ) {
-
-                    if (isLoading) {
-
-                        CircularProgressIndicator(
-
-                            modifier =
-                                Modifier.size(20.dp),
-
-                            strokeWidth =
-                                2.dp
-                        )
-
-                        Spacer(
-                            modifier =
-                                Modifier.width(10.dp)
-                        )
-
-                        Text(
-                            "Signing in..."
-                        )
-
-                    } else {
-
-                        Text(
-                            "SIGN IN"
-                        )
-                    }
-                }
-
-
-                Spacer(
-                    modifier =
-                        Modifier.height(16.dp)
-                )
-
-
-                // =================================================
-                // REGISTER
-                // =================================================
-
-                Row(
-
-                    modifier =
-                        Modifier.fillMaxWidth(),
-
-                    horizontalArrangement =
-                        Arrangement.Center,
-
-                    verticalAlignment =
-                        Alignment.CenterVertically
-                ) {
 
                     Text(
-
                         text =
-                            "New to Pro Wheel Drive?",
+                            "Sign in to continue managing your driving school.",
 
                         style =
                             MaterialTheme
@@ -613,45 +313,545 @@ fun LoginScreen(
                     )
 
 
-                    TextButton(
+                    Spacer(
+                        modifier =
+                            Modifier.height(22.dp)
+                    )
 
-                        onClick =
-                            onRegister,
 
-                        enabled =
-                            !isLoading
+                    // =========================================
+                    // USERNAME
+                    // =========================================
+
+                    ModernLoginField(
+
+                        value =
+                            username,
+
+                        onValueChange = {
+                            username = it
+                            usernameError = false
+                        },
+
+                        label =
+                            "Username",
+
+                        placeholder =
+                            "Enter your username",
+
+                        icon =
+                            Icons.Default.Person,
+
+                        isError =
+                            usernameError,
+
+                        errorMessage =
+                            if (usernameError) {
+                                "Username is required"
+                            } else {
+                                null
+                            },
+
+                        keyboardOptions =
+                            KeyboardOptions(
+                                imeAction =
+                                    ImeAction.Next
+                            ),
+
+                        keyboardActions =
+                            KeyboardActions(
+                                onNext = {
+                                    passwordFocusRequester
+                                        .requestFocus()
+                                }
+                            )
+                    )
+
+
+                    Spacer(
+                        modifier =
+                            Modifier.height(14.dp)
+                    )
+
+
+                    // =========================================
+                    // PASSWORD
+                    // =========================================
+
+                    ModernLoginField(
+
+                        value =
+                            password,
+
+                        onValueChange = {
+                            password = it
+                            passwordError = false
+                        },
+
+                        label =
+                            "Password",
+
+                        placeholder =
+                            "Enter your password",
+
+                        icon =
+                            Icons.Default.Lock,
+
+                        isError =
+                            passwordError,
+
+                        errorMessage =
+                            if (passwordError) {
+                                "Password is required"
+                            } else {
+                                null
+                            },
+
+                        modifier =
+                            Modifier.focusRequester(
+                                passwordFocusRequester
+                            ),
+
+                        visualTransformation =
+                            if (passwordVisible) {
+                                VisualTransformation.None
+                            } else {
+                                PasswordVisualTransformation()
+                            },
+
+                        trailingContent = {
+
+                            IconButton(
+                                onClick = {
+                                    passwordVisible =
+                                        !passwordVisible
+                                }
+                            ) {
+
+                                Icon(
+                                    imageVector =
+                                        if (passwordVisible) {
+                                            Icons.Default.VisibilityOff
+                                        } else {
+                                            Icons.Default.Visibility
+                                        },
+
+                                    contentDescription =
+                                        if (passwordVisible) {
+                                            "Hide password"
+                                        } else {
+                                            "Show password"
+                                        }
+                                )
+                            }
+                        },
+
+                        keyboardOptions =
+                            KeyboardOptions(
+                                imeAction =
+                                    ImeAction.Done
+                            ),
+
+                        keyboardActions =
+                            KeyboardActions(
+                                onDone = {
+
+                                    keyboardController
+                                        ?.hide()
+
+                                    if (
+                                        username.isNotBlank() &&
+                                        password.isNotBlank()
+                                    ) {
+
+                                        onLogin(
+                                            username.trim(),
+                                            password,
+                                            keepLoggedIn
+                                        )
+                                    } else {
+
+                                        usernameError =
+                                            username.isBlank()
+
+                                        passwordError =
+                                            password.isBlank()
+                                    }
+                                }
+                            )
+                    )
+
+
+                    Spacer(
+                        modifier =
+                            Modifier.height(8.dp)
+                    )
+
+
+                    // =========================================
+                    // KEEP LOGGED IN
+                    // =========================================
+
+                    Row(
+
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clickableWithoutRipple {
+                                    keepLoggedIn =
+                                        !keepLoggedIn
+                                },
+
+                        verticalAlignment =
+                            Alignment.CenterVertically
+                    ) {
+
+                        Checkbox(
+
+                            checked =
+                                keepLoggedIn,
+
+                            onCheckedChange = {
+                                keepLoggedIn =
+                                    it
+                            }
+                        )
+
+
+                        Spacer(
+                            modifier =
+                                Modifier.width(4.dp)
+                        )
+
+
+                        Text(
+                            text =
+                                "Keep me logged in",
+
+                            style =
+                                MaterialTheme
+                                    .typography
+                                    .bodyMedium,
+
+                            modifier =
+                                Modifier.weight(1f)
+                        )
+                    }
+
+
+                    Spacer(
+                        modifier =
+                            Modifier.height(16.dp)
+                    )
+
+
+                    // =========================================
+                    // LOGIN BUTTON
+                    // =========================================
+
+                    Button(
+
+                        onClick = {
+
+                            usernameError =
+                                username.isBlank()
+
+                            passwordError =
+                                password.isBlank()
+
+                            if (
+                                usernameError ||
+                                passwordError
+                            ) {
+                                return@Button
+                            }
+
+
+                            keyboardController
+                                ?.hide()
+
+
+                            onLogin(
+                                username.trim(),
+                                password,
+                                keepLoggedIn
+                            )
+                        },
+
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .size(
+                                    height = 54.dp,
+                                    width = 0.dp
+                                ),
+
+                        shape =
+                            RoundedCornerShape(16.dp)
                     ) {
 
                         Text(
-                            "Create account"
+                            text =
+                                "Sign in",
+
+                            fontWeight =
+                                FontWeight.SemiBold
+                        )
+
+
+                        Spacer(
+                            modifier =
+                                Modifier.width(8.dp)
+                        )
+
+
+                        Icon(
+                            imageVector =
+                                Icons.AutoMirrored.Filled.ArrowForward,
+
+                            contentDescription =
+                                null
                         )
                     }
                 }
             }
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(20.dp)
+            )
+
+
+            // =================================================
+            // REGISTER
+            // =================================================
+
+            Row(
+
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+
+                Text(
+                    text =
+                        "New to Pro Wheel Drive?",
+
+                    style =
+                        MaterialTheme
+                            .typography
+                            .bodyMedium,
+
+                    color =
+                        MaterialTheme
+                            .colorScheme
+                            .onSurfaceVariant
+                )
+
+
+                TextButton(
+                    onClick =
+                        onRegister
+                ) {
+
+                    Text(
+                        text =
+                            "Create account",
+
+                        fontWeight =
+                            FontWeight.SemiBold
+                    )
+                }
+            }
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(12.dp)
+            )
+
+
+            // =================================================
+            // SECURITY NOTE
+            // =================================================
+
+            Row(
+
+                modifier =
+                    Modifier.fillMaxWidth(),
+
+                horizontalArrangement =
+                    Arrangement.Center,
+
+                verticalAlignment =
+                    Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    imageVector =
+                        Icons.Default.Check,
+
+                    contentDescription =
+                        null,
+
+                    modifier =
+                        Modifier.size(16.dp),
+
+                    tint =
+                        MaterialTheme
+                            .colorScheme
+                            .primary
+                )
+
+
+                Spacer(
+                    modifier =
+                        Modifier.width(6.dp)
+                )
+
+
+                Text(
+                    text =
+                        "Your login details are securely handled.",
+
+                    style =
+                        MaterialTheme
+                            .typography
+                            .labelMedium,
+
+                    color =
+                        MaterialTheme
+                            .colorScheme
+                            .onSurfaceVariant,
+
+                    textAlign =
+                        TextAlign.Center,
+
+                    maxLines = 2,
+
+                    overflow =
+                        TextOverflow.Ellipsis
+                )
+            }
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(16.dp)
+            )
         }
-
-
-        Spacer(
-            modifier =
-                Modifier.height(24.dp)
-        )
-
-
-        Text(
-
-            text =
-                "Fast • Simple • Secure",
-
-            style =
-                MaterialTheme
-                    .typography
-                    .labelMedium,
-
-            color =
-                MaterialTheme
-                    .colorScheme
-                    .onSurfaceVariant
-        )
     }
 }
 
+
+// =============================================================
+// MODERN LOGIN FIELD
+// =============================================================
+
+@Composable
+private fun ModernLoginField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    errorMessage: String? = null,
+    visualTransformation: VisualTransformation =
+        VisualTransformation.None,
+    trailingContent: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions =
+        KeyboardOptions.Default,
+    keyboardActions: KeyboardActions =
+        KeyboardActions.Default
+) {
+
+    OutlinedTextField(
+
+        value =
+            value,
+
+        onValueChange =
+            onValueChange,
+
+        modifier =
+            modifier.fillMaxWidth(),
+
+        label = {
+            Text(label)
+        },
+
+        placeholder = {
+            Text(placeholder)
+        },
+
+        leadingIcon = {
+
+            Icon(
+                imageVector =
+                    icon,
+
+                contentDescription =
+                    null
+            )
+        },
+
+        trailingIcon =
+            trailingContent,
+
+        isError =
+            isError,
+
+        supportingText = {
+
+            if (
+                isError &&
+                errorMessage != null
+            ) {
+
+                Text(
+                    text =
+                        errorMessage
+                )
+            }
+        },
+
+        singleLine =
+            true,
+
+        shape =
+            RoundedCornerShape(14.dp),
+
+        visualTransformation =
+            visualTransformation,
+
+        keyboardOptions =
+            keyboardOptions,
+
+        keyboardActions =
+            keyboardActions
+    )
+}
+
+
+// =============================================================
+// CLICK WITHOUT RIPPLE
+// =============================================================
+
+private fun Modifier.clickableWithoutRipple(
+    onClick: () -> Unit
+): Modifier {
+
+    return this.then(
+        Modifier
+            .clickable(
+                indication = null,
+                interactionSource =
+                    androidx.compose.foundation
+                        .interaction
+                        .MutableInteractionSource(),
+                onClick = onClick
+            )
+    )
+}
