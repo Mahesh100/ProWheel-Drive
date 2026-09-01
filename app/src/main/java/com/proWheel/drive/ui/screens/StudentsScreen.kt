@@ -2,6 +2,7 @@ package com.proWheel.drive.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,23 +15,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -56,156 +57,362 @@ fun StudentsScreen(
     onDeleteStudent: (Student) -> Unit
 ) {
 
+    var searchQuery by remember {
+        mutableStateOf("")
+    }
+
     var studentToDelete by remember {
         mutableStateOf<Student?>(null)
     }
 
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(
-                horizontal = 20.dp,
-                vertical = 16.dp
-            )
-    ) {
-
-        // =====================================================
-        // HEADER
-        // =====================================================
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+    val filteredStudents =
+        remember(
+            students,
+            searchQuery
         ) {
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            if (searchQuery.isBlank()) {
 
-                Text(
-                    text = "Students",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
+                students
 
-                Spacer(
-                    modifier = Modifier.height(3.dp)
-                )
+            } else {
 
-                Text(
-                    text = studentCountText(students.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+                val query =
+                    searchQuery.trim()
+                        .lowercase()
 
+                students.filter { student ->
 
-            FilledTonalButton(
-                onClick = onAddStudent,
-                shape = RoundedCornerShape(14.dp)
-            ) {
+                    student.name
+                        .lowercase()
+                        .contains(query) ||
 
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null
-                )
+                            student.mobile
+                                .lowercase()
+                                .contains(query) ||
 
-                Spacer(
-                    modifier = Modifier.width(6.dp)
-                )
-
-                Text(
-                    text = "Add student",
-                    fontWeight = FontWeight.SemiBold
-                )
+                            student.course
+                                .lowercase()
+                                .contains(query)
+                }
             }
         }
 
 
-        Spacer(
-            modifier = Modifier.height(20.dp)
-        )
+    Box(
+        modifier =
+            modifier.fillMaxSize()
+    ) {
 
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(
+                        horizontal = 20.dp
+                    )
+        ) {
 
-        // =====================================================
-        // EMPTY STATE
-        // =====================================================
-
-        if (students.isEmpty()) {
-
-            EmptyStudentsState(
-                onAddStudent = onAddStudent
+            Spacer(
+                modifier =
+                    Modifier.height(16.dp)
             )
 
-        } else {
 
-            // =================================================
-            // STUDENT LIST
-            // =================================================
+            // =====================================================
+            // HEADER
+            // =====================================================
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-
-                verticalArrangement =
-                    Arrangement.spacedBy(12.dp)
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth(),
+                verticalAlignment =
+                    Alignment.CenterVertically
             ) {
 
-                items(
-                    items = students,
-                    key = { student ->
-                        student.id
-                    }
-                ) { student ->
+                Column(
+                    modifier =
+                        Modifier.weight(1f)
+                ) {
 
-                    StudentCard(
-                        student = student,
+                    Text(
+                        text =
+                            "Students",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .headlineSmall,
+                        fontWeight =
+                            FontWeight.Bold
+                    )
 
-                        onClick = {
-                            onStudentClick(student)
-                        },
 
-                        onDelete = {
-                            studentToDelete = student
+                    Spacer(
+                        modifier =
+                            Modifier.height(3.dp)
+                    )
+
+
+                    Text(
+                        text =
+                            "${students.size} registered student" +
+                                    if (students.size == 1)
+                                        ""
+                                    else
+                                        "s",
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodyMedium,
+                        color =
+                            MaterialTheme
+                                .colorScheme
+                                .onSurfaceVariant
+                    )
+                }
+
+
+                // =================================================
+                // ADD BUTTON
+                // =================================================
+
+                Button(
+                    onClick =
+                        onAddStudent
+                ) {
+
+                    Icon(
+                        imageVector =
+                            Icons.Default.Add,
+                        contentDescription =
+                            null
+                    )
+
+                    Spacer(
+                        modifier =
+                            Modifier.width(6.dp)
+                    )
+
+                    Text(
+                        text =
+                            "Add Student"
+                    )
+                }
+            }
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(16.dp)
+            )
+
+
+            // =====================================================
+            // SEARCH
+            // =====================================================
+
+            OutlinedTextField(
+
+                value =
+                    searchQuery,
+
+                onValueChange = {
+                    searchQuery = it
+                },
+
+                modifier =
+                    Modifier.fillMaxWidth(),
+
+                singleLine = true,
+
+                leadingIcon = {
+
+                    Icon(
+                        imageVector =
+                            Icons.Default.Search,
+                        contentDescription =
+                            "Search students"
+                    )
+                },
+
+                placeholder = {
+
+                    Text(
+                        text =
+                            "Search by name, mobile or course"
+                    )
+                },
+
+                shape =
+                    MaterialTheme
+                        .shapes
+                        .large
+            )
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(16.dp)
+            )
+
+
+            // =====================================================
+            // CONTENT
+            // =====================================================
+
+            when {
+
+                // -------------------------------------------------
+                // NO STUDENTS
+                // -------------------------------------------------
+
+                students.isEmpty() -> {
+
+                    EmptyStudentsState(
+                        onAddStudent =
+                            onAddStudent
+                    )
+                }
+
+
+                // -------------------------------------------------
+                // NO SEARCH RESULT
+                // -------------------------------------------------
+
+                filteredStudents.isEmpty() -> {
+
+                    NoSearchResultState(
+                        searchQuery =
+                            searchQuery,
+
+                        onClearSearch = {
+                            searchQuery = ""
                         }
                     )
                 }
+
+
+                // -------------------------------------------------
+                // STUDENT LIST
+                // -------------------------------------------------
+
+                else -> {
+
+                    LazyColumn(
+
+                        modifier =
+                            Modifier.fillMaxSize(),
+
+                        verticalArrangement =
+                            Arrangement.spacedBy(
+                                12.dp
+                            ),
+
+                        contentPadding =
+                            androidx.compose.foundation.layout
+                                .PaddingValues(
+                                    bottom = 96.dp
+                                )
+                    ) {
+
+                        items(
+
+                            items =
+                                filteredStudents,
+
+                            key = {
+                                it.id
+                            }
+                        ) { student ->
+
+                            StudentCard(
+
+                                student =
+                                    student,
+
+                                onClick = {
+
+                                    onStudentClick(
+                                        student
+                                    )
+                                },
+
+                                onDelete = {
+
+                                    studentToDelete =
+                                        student
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+
+        // =========================================================
+        // FLOATING ACTION BUTTON
+        // =========================================================
+
+        if (students.isNotEmpty()) {
+
+            FloatingActionButton(
+
+                onClick =
+                    onAddStudent,
+
+                modifier =
+                    Modifier
+                        .align(
+                            Alignment.BottomEnd
+                        )
+                        .padding(
+                            end = 20.dp,
+                            bottom = 20.dp
+                        )
+            ) {
+
+                Icon(
+                    imageVector =
+                        Icons.Default.Add,
+                    contentDescription =
+                        "Add student"
+                )
             }
         }
     }
 
 
-    // =========================================================
+    // =============================================================
     // DELETE CONFIRMATION
-    // =========================================================
+    // =============================================================
 
     studentToDelete?.let { student ->
 
         AlertDialog(
 
             onDismissRequest = {
-                studentToDelete = null
+
+                studentToDelete =
+                    null
             },
 
             icon = {
 
                 Icon(
                     imageVector =
-                        Icons.Default.DeleteOutline,
-
-                    contentDescription = null,
-
-                    tint =
-                        MaterialTheme
-                            .colorScheme
-                            .error
+                        Icons.Default.Delete,
+                    contentDescription =
+                        null
                 )
             },
 
             title = {
 
                 Text(
-                    text = "Delete student?"
+                    text =
+                        "Delete student?"
                 )
             },
 
@@ -213,28 +420,29 @@ fun StudentsScreen(
 
                 Text(
                     text =
-                        "Are you sure you want to delete ${student.name}? This action cannot be undone."
+                        "Are you sure you want to delete " +
+                                "${student.name}? This action cannot be undone."
                 )
             },
 
             confirmButton = {
 
                 TextButton(
+
                     onClick = {
 
-                        onDeleteStudent(student)
+                        onDeleteStudent(
+                            student
+                        )
 
-                        studentToDelete = null
+                        studentToDelete =
+                            null
                     }
                 ) {
 
                     Text(
-                        text = "Delete",
-
-                        color =
-                            MaterialTheme
-                                .colorScheme
-                                .error
+                        text =
+                            "Delete"
                     )
                 }
             },
@@ -242,11 +450,18 @@ fun StudentsScreen(
             dismissButton = {
 
                 TextButton(
+
                     onClick = {
-                        studentToDelete = null
+
+                        studentToDelete =
+                            null
                     }
                 ) {
-                    Text("Cancel")
+
+                    Text(
+                        text =
+                            "Cancel"
+                    )
                 }
             }
         )
@@ -254,9 +469,9 @@ fun StudentsScreen(
 }
 
 
-// =============================================================
+// =================================================================
 // STUDENT CARD
-// =============================================================
+// =================================================================
 
 @Composable
 private fun StudentCard(
@@ -270,19 +485,16 @@ private fun StudentCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clickable {
-                    onClick()
-                },
-
-        shape =
-            RoundedCornerShape(20.dp),
+                .clickable(
+                    onClick = onClick
+                ),
 
         colors =
             CardDefaults.cardColors(
                 containerColor =
                     MaterialTheme
                         .colorScheme
-                        .surfaceContainer
+                        .surfaceContainerLow
             ),
 
         elevation =
@@ -293,14 +505,17 @@ private fun StudentCard(
 
         Column(
             modifier =
-                Modifier.padding(18.dp)
+                Modifier.padding(
+                    16.dp
+                )
         ) {
 
-            // =================================================
-            // STUDENT HEADER
-            // =================================================
+            // =====================================================
+            // TOP ROW
+            // =====================================================
 
             Row(
+
                 modifier =
                     Modifier.fillMaxWidth(),
 
@@ -309,13 +524,14 @@ private fun StudentCard(
             ) {
 
                 StudentAvatar(
-                    name = student.name
+                    name =
+                        student.name
                 )
 
 
                 Spacer(
                     modifier =
-                        Modifier.width(14.dp)
+                        Modifier.width(12.dp)
                 )
 
 
@@ -325,6 +541,7 @@ private fun StudentCard(
                 ) {
 
                     Text(
+
                         text =
                             student.name.ifBlank {
                                 "Unnamed student"
@@ -351,38 +568,45 @@ private fun StudentCard(
                     )
 
 
-                    if (student.course.isNotBlank()) {
+                    Text(
 
-                        Text(
-                            text =
-                                student.course,
+                        text =
+                            student.course.ifBlank {
+                                "Course not specified"
+                            },
 
-                            style =
-                                MaterialTheme
-                                    .typography
-                                    .bodyMedium,
+                        style =
+                            MaterialTheme
+                                .typography
+                                .bodyMedium,
 
-                            color =
-                                MaterialTheme
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                        color =
+                            MaterialTheme
+                                .colorScheme
+                                .onSurfaceVariant,
 
-                            maxLines = 1,
+                        maxLines = 1,
 
-                            overflow =
-                                TextOverflow.Ellipsis
-                        )
-                    }
+                        overflow =
+                            TextOverflow.Ellipsis
+                    )
                 }
 
 
+                // =================================================
+                // DELETE
+                // =================================================
+
                 IconButton(
-                    onClick = onDelete
+
+                    onClick =
+                        onDelete
                 ) {
 
                     Icon(
+
                         imageVector =
-                            Icons.Default.DeleteOutline,
+                            Icons.Default.Delete,
 
                         contentDescription =
                             "Delete ${student.name}",
@@ -390,7 +614,7 @@ private fun StudentCard(
                         tint =
                             MaterialTheme
                                 .colorScheme
-                                .onSurfaceVariant
+                                .error
                     )
                 }
             }
@@ -398,16 +622,25 @@ private fun StudentCard(
 
             Spacer(
                 modifier =
-                    Modifier.height(16.dp)
+                    Modifier.height(14.dp)
             )
 
 
-            HorizontalDivider(
+            // =====================================================
+            // DIVIDER
+            // =====================================================
+
+            Surface(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(1.dp),
+
                 color =
                     MaterialTheme
                         .colorScheme
                         .outlineVariant
-            )
+            ) {}
 
 
             Spacer(
@@ -416,119 +649,96 @@ private fun StudentCard(
             )
 
 
-            // =================================================
-            // INFORMATION
-            // =================================================
-
-            StudentInfoItem(
-                icon =
-                    Icons.Default.Phone,
-
-                label =
-                    "Mobile",
-
-                value =
-                    student.mobile
-            )
-
-
-            Spacer(
-                modifier =
-                    Modifier.height(10.dp)
-            )
-
-
-            StudentInfoItem(
-                icon =
-                    Icons.Default.CalendarMonth,
-
-                label =
-                    "Admission",
-
-                value =
-                    student.admissionDate
-            )
-
-
-            Spacer(
-                modifier =
-                    Modifier.height(10.dp)
-            )
-
-
-            StudentInfoItem(
-                icon =
-                    Icons.Default.Schedule,
-
-                label =
-                    "Training",
-
-                value =
-                    student.trainingTime
-            )
-
-
-            Spacer(
-                modifier =
-                    Modifier.height(14.dp)
-            )
-
-
-            // =================================================
-            // FOOTER
-            // =================================================
+            // =====================================================
+            // DETAILS
+            // =====================================================
 
             Row(
                 modifier =
                     Modifier.fillMaxWidth(),
-
-                verticalAlignment =
-                    Alignment.CenterVertically
+                horizontalArrangement =
+                    Arrangement.spacedBy(
+                        12.dp
+                    )
             ) {
 
-                Text(
-                    text =
-                        "View student details",
+                StudentDetailItem(
 
                     modifier =
                         Modifier.weight(1f),
 
-                    style =
-                        MaterialTheme
-                            .typography
-                            .labelLarge,
+                    icon =
+                        Icons.Default.Phone,
 
-                    color =
-                        MaterialTheme
-                            .colorScheme
-                            .primary
+                    label =
+                        "Mobile",
+
+                    value =
+                        student.mobile
+                            .ifBlank {
+                                "Not available"
+                            }
                 )
 
 
-                Icon(
-                    imageVector =
-                        Icons.Default.ArrowForward,
-
-                    contentDescription =
-                        "View details",
+                StudentDetailItem(
 
                     modifier =
-                        Modifier.size(20.dp),
+                        Modifier.weight(1f),
 
-                    tint =
-                        MaterialTheme
-                            .colorScheme
-                            .primary
+                    icon =
+                        Icons.Default.School,
+
+                    label =
+                        "Training",
+
+                    value =
+                        student.trainingTime
+                            .ifBlank {
+                                "Not scheduled"
+                            }
                 )
             }
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(10.dp)
+            )
+
+
+            // =====================================================
+            // ADMISSION DATE
+            // =====================================================
+
+            Text(
+
+                text =
+                    "Admission: ${
+                        student.admissionDate
+                            .ifBlank {
+                                "Not available"
+                            }
+                    }",
+
+                style =
+                    MaterialTheme
+                        .typography
+                        .labelMedium,
+
+                color =
+                    MaterialTheme
+                        .colorScheme
+                        .onSurfaceVariant
+            )
         }
     }
 }
 
 
-// =============================================================
+// =================================================================
 // STUDENT AVATAR
-// =============================================================
+// =================================================================
 
 @Composable
 private fun StudentAvatar(
@@ -539,14 +749,19 @@ private fun StudentAvatar(
         name
             .trim()
             .firstOrNull()
-            ?.uppercase()
-            ?: "S"
+            ?.uppercaseChar()
+            ?.toString()
+            ?: "?"
 
 
     Surface(
 
         modifier =
-            Modifier.size(52.dp),
+            Modifier
+                .size(52.dp)
+                .clip(
+                    CircleShape
+                ),
 
         shape =
             CircleShape,
@@ -557,25 +772,20 @@ private fun StudentAvatar(
                 .primaryContainer
     ) {
 
-        Column(
-
-            modifier =
-                Modifier.fillMaxSize(),
-
-            horizontalAlignment =
-                Alignment.CenterHorizontally,
-
-            verticalArrangement =
-                Arrangement.Center
+        Box(
+            contentAlignment =
+                Alignment.Center
         ) {
 
             Text(
-                text = initial,
+
+                text =
+                    initial,
 
                 style =
                     MaterialTheme
                         .typography
-                        .titleMedium,
+                        .titleLarge,
 
                 fontWeight =
                     FontWeight.Bold,
@@ -590,24 +800,22 @@ private fun StudentAvatar(
 }
 
 
-// =============================================================
-// STUDENT INFORMATION ITEM
-// =============================================================
+// =================================================================
+// STUDENT DETAIL ITEM
+// =================================================================
 
 @Composable
-private fun StudentInfoItem(
-    icon:
-    androidx.compose.ui.graphics.vector.ImageVector,
-
+private fun StudentDetailItem(
+    modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-
     value: String
 ) {
 
     Row(
 
         modifier =
-            Modifier.fillMaxWidth(),
+            modifier,
 
         verticalAlignment =
             Alignment.CenterVertically
@@ -615,34 +823,34 @@ private fun StudentInfoItem(
 
         Icon(
 
-            imageVector = icon,
+            imageVector =
+                icon,
 
-            contentDescription = null,
+            contentDescription =
+                null,
 
             modifier =
-                Modifier.size(20.dp),
+                Modifier.size(18.dp),
 
             tint =
                 MaterialTheme
                     .colorScheme
-                    .onSurfaceVariant
+                    .primary
         )
 
 
         Spacer(
             modifier =
-                Modifier.width(12.dp)
+                Modifier.width(8.dp)
         )
 
 
-        Column(
-            modifier =
-                Modifier.weight(1f)
-        ) {
+        Column {
 
             Text(
 
-                text = label,
+                text =
+                    label,
 
                 style =
                     MaterialTheme
@@ -659,14 +867,12 @@ private fun StudentInfoItem(
             Text(
 
                 text =
-                    value.ifBlank {
-                        "Not provided"
-                    },
+                    value,
 
                 style =
                     MaterialTheme
                         .typography
-                        .bodyMedium,
+                        .bodySmall,
 
                 maxLines = 1,
 
@@ -678,161 +884,257 @@ private fun StudentInfoItem(
 }
 
 
-// =============================================================
+// =================================================================
 // EMPTY STATE
-// =============================================================
+// =================================================================
 
 @Composable
 private fun EmptyStudentsState(
     onAddStudent: () -> Unit
 ) {
 
-    Column(
-
+    Box(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(
-                    horizontal = 20.dp
-                ),
-
-        horizontalAlignment =
-            Alignment.CenterHorizontally,
-
-        verticalArrangement =
-            Arrangement.Center
+            Modifier.fillMaxSize(),
+        contentAlignment =
+            Alignment.Center
     ) {
 
-        Surface(
+        Column(
 
             modifier =
-                Modifier.size(72.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = 32.dp
+                    ),
 
-            shape =
-                CircleShape,
-
-            color =
-                MaterialTheme
-                    .colorScheme
-                    .primaryContainer
+            horizontalAlignment =
+                Alignment.CenterHorizontally
         ) {
 
-            Icon(
-                imageVector =
-                    Icons.Default.Groups,
-
-                contentDescription = null,
+            Surface(
 
                 modifier =
-                    Modifier.padding(20.dp),
+                    Modifier.size(72.dp),
 
-                tint =
+                shape =
+                    CircleShape,
+
+                color =
                     MaterialTheme
                         .colorScheme
-                        .onPrimaryContainer
-            )
-        }
+                        .primaryContainer
+            ) {
 
+                Box(
+                    contentAlignment =
+                        Alignment.Center
+                ) {
 
-        Spacer(
-            modifier =
-                Modifier.height(20.dp)
-        )
+                    Icon(
 
+                        imageVector =
+                            Icons.Default.Person,
 
-        Text(
-            text =
-                "No students yet",
+                        contentDescription =
+                            null,
 
-            style =
-                MaterialTheme
-                    .typography
-                    .titleLarge,
+                        modifier =
+                            Modifier.size(36.dp),
 
-            fontWeight =
-                FontWeight.SemiBold
-        )
+                        tint =
+                            MaterialTheme
+                                .colorScheme
+                                .onPrimaryContainer
+                    )
+                }
+            }
 
-
-        Spacer(
-            modifier =
-                Modifier.height(6.dp)
-        )
-
-
-        Text(
-            text =
-                "Add your first student to start managing training, attendance and admission details.",
-
-            modifier =
-                Modifier.fillMaxWidth(),
-
-            style =
-                MaterialTheme
-                    .typography
-                    .bodyMedium,
-
-            color =
-                MaterialTheme
-                    .colorScheme
-                    .onSurfaceVariant,
-
-            textAlign =
-                androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-
-        Spacer(
-            modifier =
-                Modifier.height(20.dp)
-        )
-
-
-        FilledTonalButton(
-            onClick =
-                onAddStudent,
-
-            shape =
-                RoundedCornerShape(14.dp)
-        ) {
-
-            Icon(
-                imageVector =
-                    Icons.Default.Add,
-
-                contentDescription = null
-            )
 
             Spacer(
                 modifier =
-                    Modifier.width(8.dp)
+                    Modifier.height(18.dp)
             )
 
+
             Text(
-                text = "Add first student"
+
+                text =
+                    "No students yet",
+
+                style =
+                    MaterialTheme
+                        .typography
+                        .titleLarge,
+
+                fontWeight =
+                    FontWeight.Bold
             )
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(6.dp)
+            )
+
+
+            Text(
+
+                text =
+                    "Add your first student to start managing training and attendance.",
+
+                style =
+                    MaterialTheme
+                        .typography
+                        .bodyMedium,
+
+                color =
+                    MaterialTheme
+                        .colorScheme
+                        .onSurfaceVariant
+            )
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(20.dp)
+            )
+
+
+            Button(
+                onClick =
+                    onAddStudent
+            ) {
+
+                Icon(
+                    imageVector =
+                        Icons.Default.Add,
+                    contentDescription =
+                        null
+                )
+
+                Spacer(
+                    modifier =
+                        Modifier.width(8.dp)
+                )
+
+                Text(
+                    text =
+                        "Add Student"
+                )
+            }
         }
     }
 }
 
 
-// =============================================================
-// STUDENT COUNT
-// =============================================================
+// =================================================================
+// SEARCH EMPTY STATE
+// =================================================================
 
-private fun studentCountText(
-    count: Int
-): String {
+@Composable
+private fun NoSearchResultState(
+    searchQuery: String,
+    onClearSearch: () -> Unit
+) {
 
-    return when (count) {
+    Box(
+        modifier =
+            Modifier.fillMaxSize(),
+        contentAlignment =
+            Alignment.Center
+    ) {
 
-        0 ->
-            "No students registered"
+        Column(
 
-        1 ->
-            "1 student registered"
+            horizontalAlignment =
+                Alignment.CenterHorizontally,
 
-        else ->
-            "$count students registered"
+            modifier =
+                Modifier.padding(
+                    horizontal = 32.dp
+                )
+        ) {
+
+            Icon(
+
+                imageVector =
+                    Icons.Default.Search,
+
+                contentDescription =
+                    null,
+
+                modifier =
+                    Modifier.size(48.dp),
+
+                tint =
+                    MaterialTheme
+                        .colorScheme
+                        .onSurfaceVariant
+            )
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(12.dp)
+            )
+
+
+            Text(
+
+                text =
+                    "No students found",
+
+                style =
+                    MaterialTheme
+                        .typography
+                        .titleMedium,
+
+                fontWeight =
+                    FontWeight.SemiBold
+            )
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(6.dp)
+            )
+
+
+            Text(
+
+                text =
+                    "No students match \"$searchQuery\".",
+
+                style =
+                    MaterialTheme
+                        .typography
+                        .bodyMedium,
+
+                color =
+                    MaterialTheme
+                        .colorScheme
+                        .onSurfaceVariant
+            )
+
+
+            Spacer(
+                modifier =
+                    Modifier.height(12.dp)
+            )
+
+
+            TextButton(
+                onClick =
+                    onClearSearch
+            ) {
+
+                Text(
+                    text =
+                        "Clear search"
+                )
+            }
+        }
     }
 }
